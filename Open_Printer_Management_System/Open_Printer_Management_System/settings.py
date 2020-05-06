@@ -120,3 +120,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# For some reason I had to uncomment this line and comment the STATICFILES_DIRS
+# to be able to run python manage.py collectstatic
+# But comment this line and uncomment the STATICFILES_DIRS to have the static
+# Files actually work in the site
+
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
