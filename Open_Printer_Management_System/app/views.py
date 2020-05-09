@@ -8,15 +8,20 @@ def homepage(request):
         form = AddPrinterForm(request.POST)
 
         if form.is_valid():
-            RunFormFunction(form)
+            run_form_function(form)
 
         return redirect('homepage')
     else:
         form = AddPrinterForm()
 
-    return render(request, 'app/home.html', {'form': form})
+    all_departments = Printer.objects.filter().values('department_name').distinct()
+    all_printer_objects = Printer.objects.all().order_by('department_name', 'printer_name')
 
-def RunFormFunction(form):
+    return render(request, 'app/home.html',
+                  {'form': form, 'all_departments': all_departments,
+                   'all_printers': all_printer_objects})
+
+def run_form_function(form):
     printer_name = form.cleaned_data['printer_name']
     printer_model_name = form.cleaned_data['printer_model_name']
     printer_location = form.cleaned_data['printer_location']
