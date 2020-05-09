@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Printer
+
+class PrinterAdmin(admin.ModelAdmin):
+    list_display = ('printer_name', 'printer_model_name', 'printer_location', 'ip_address', 'department_name')
+
+admin.site.register(Printer, PrinterAdmin)
