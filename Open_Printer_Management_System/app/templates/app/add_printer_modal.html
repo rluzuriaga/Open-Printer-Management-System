@@ -1,0 +1,71 @@
+{% block ModalContent %}
+
+<div class="modal fade" id="addPrinterModal" tabindex="-1" role="dialog" aria-labelledby="addPrinterModal" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="addPrinterModal">Add Printer</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="post" id="form">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-4">
+                    <label for="{{ form.printer_name.id_for_label }}">Printer Name: </label>
+                </div>
+                <div class="col">
+                    {{ form.printer_name }}
+                    <p style="font-size: 12px;">{{ form.printer_name.help_text }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4">
+                    <label for="{{ form.printer_model_name.id_for_label }}">Printer Model: </label>
+                </div>
+                <div class="col">
+                    {{ form.printer_model_name }}
+                    <p style="font-size: 12px;">{{ form.printer_model_name.help_text }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4">
+                    <label for="{{ form.printer_location.id_for_label }}">Printer Location: </label>
+                </div>
+                <div class="col">
+                    {{ form.printer_location }}
+                    <p style="font-size: 12px;">{{ form.printer_location.help_text }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4">
+                    <label for="{{ form.ip_address.id_for_label }}">IP Address:</label>
+                </div>
+                <div class="col">
+                    {{ form.ip_address }}
+                    <p style="font-size: 12px;">{{ form.ip_address.help_text }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4">
+                    <label for="{{ form.department_name.id_for_label }}">Departnment Name:</label>
+                </div>
+                <div class="col">
+                    {{ form.department_name }}
+                    <p style="font-size: 12px;">{{ form.department_name.help_text }}</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit button" form="form" class="btn btn-primary" value="Submit">Save changes</button>
+            </div>
+        </form>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+{% endblock ModalContent %}
