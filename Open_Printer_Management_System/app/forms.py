@@ -6,11 +6,11 @@ class AddPrinterForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['printer_name']
-        self.fields['printer_model_name']
-        self.fields['printer_location']
-        self.fields['ip_address']
-        self.fields['department_name']
+        self.fields['printer_name'].widget.attrs.update(size='34')
+        self.fields['printer_model_name'].widget.attrs.update(size='34')
+        self.fields['printer_location'].widget.attrs.update(size='34')
+        self.fields['ip_address'].widget.attrs.update(size='34')
+        self.fields['department_name'].widget.attrs.update(size='34')
     
     class Meta:
         model = Printer
