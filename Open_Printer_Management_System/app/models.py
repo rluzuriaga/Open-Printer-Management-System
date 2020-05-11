@@ -1,5 +1,8 @@
 from django.db import models
 
+from datetime import timedelta
+from django.utils import timezone
+
 class Printer(models.Model):
     printer_name = models.CharField(
         'Printer Name',
@@ -41,3 +44,42 @@ class TonerLevel(models.Model):
 
     def __str__(self):
         return str(self.printer_name)
+
+def update_database(printer_levels_dict):
+    ''' Update the TonerLevel Table in the database with the information in the dictionary argument.
+
+    Args:
+        printer_levels_dict (dict): Dictionary with toner levels data.
+            DICTIONARY STRUCTURE:
+                {
+                    'PRINTER NAME': {
+                        'MODULE IDENTIFIER/TONER COLOR': 'LEVEL',
+                        'Cyan Cartridge 508A HP CF361A': '13', ...
+                    },
+                    '8X11_2232': {...}
+                    ...
+                }
+    '''
+    # Check for redundancy. If the database already has the same toner levels just update the datetime field.
+    time_threshold = timezone.now() - timedelta(hours=1)
+    query = TonerLevel.objects.filter(date_time__gt=time_threshold)
+
+    for key_top, value_dict in printer_levels_dict.items():
+        for key, value in value_dict.items():
+            # If the value of the toner data already in the database (up to an hour before) is the same as the printer_levels_dict
+            #   then the database doesn't get updated
+            try:
+                query_check = query.get(
+                    printer_name=Printer.objects.get(printer_name=key_top),
+                    module_identifier=key).level
+            except TonerLevel.DoesNotExist:
+                query_check = {}
+
+            if len(query_check) != 0 and query_check == value:
+                continue
+
+            TonerLevel.objects.create(
+                printer_name=Printer.objects.get(printer_name=key_top),
+                module_identifier=key,
+                level=value
+            )
