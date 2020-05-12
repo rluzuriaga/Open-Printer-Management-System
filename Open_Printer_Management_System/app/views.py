@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.utils import timezone
+from django.core.management import call_command
 
 from .forms import AddPrinterForm
 from .models import Printer, TonerLevel
@@ -42,3 +43,10 @@ def run_form_function(form):
         ip_address=ip_address,
         department_name=department_name
     )
+
+    extra_data = f'-n {printer_name} -i {ip_address}'
+    call_command('updatetonerdata', extra_data)
+
+def refresh_toner(request):
+    call_command('updatetonerdata')
+    return redirect('homepage')
