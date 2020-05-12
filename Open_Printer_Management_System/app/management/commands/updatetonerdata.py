@@ -6,12 +6,25 @@ from app.models import Printer, update_database
 class Command(BaseCommand):
     help = 'Updates the database with the newest toner data.'
 
+    def add_arguments(self, parser):
+        parser.add_argument('-i', '--ip', dest='ip')
+        parser.add_argument('-n', '--name', dest='name')
+
     def handle(self, *args, **options):
+        ip = options['ip']
+        name = options['name']
+
+        printer_levels_dict = dict()
+
+        if ip and name:
+            levels_dict = SNMP(ip).get_consumable_levels()
+            printer_levels_dict[name] = levels_dict
+            update_database(printer_levels_dict)
+            return
+
         all_printers_object = Printer.objects.all()
 
         printer_dict = {printer.printer_name: printer.ip_address for printer in all_printers_object}
-
-        printer_levels_dict = dict()
 
         for printer_name, ip_address in printer_dict.items():
             levels_dict = SNMP(ip_address).get_consumable_levels()
