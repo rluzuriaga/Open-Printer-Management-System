@@ -18,10 +18,11 @@
         {% if printer.department_name == department_name.department_name %}
           <div class="col-md-4">
             <div class="card mb-4 box-shadow">
-              <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap">
+              {% comment %} <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap"> {% endcomment %}
               <div class="card-body">
                 <h3 class="card-title">{{ printer.printer_name }}</h3>
-                <h5 class="card-title">Location: {{ printer.printer_location }}</h5>
+                <p class="card-title">Location: {{ printer.printer_location }}</p>
+                <p class="card-title">IP Address: {{ printer.ip_address }}</p>
                 <br>
                 
                 {% for printer_levels in all_toner_levels %}
