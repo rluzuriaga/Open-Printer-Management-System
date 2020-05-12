@@ -1,25 +1,27 @@
 # sudo apt-get install libsnmp-dev snmp-mibs-downloader gcc python3-dev
 # pip install easysnmp
 
+import re
 from easysnmp import Session
+from easysnmp.exceptions import EasySNMPTimeoutError
 
 class SNMP():
     def __init__(self, hostname):
         self.hostname = hostname
-        
+
         self.session = Session(hostname=self.hostname, community='public', version=3)
-    
+
     def get_consumable_levels(self):
         try:
             consumable_number = len(self.session.walk(".1.3.6.1.2.1.43.11.1.1.6.1"))
-        except SystemError:
+        except (SystemError, EasySNMPTimeoutError):
             try:
                 self.session = Session(hostname=self.hostname, community='public', version=2)
                 consumable_number = len(self.session.walk(".1.3.6.1.2.1.43.11.1.1.6.1"))
-            except SystemError:
+            except (SystemError, EasySNMPTimeoutError):
                 self.session = Session(hostname=self.hostname, community='public', version=1)
                 consumable_number = len(self.session.walk(".1.3.6.1.2.1.43.11.1.1.6.1"))
-        
+
         res = dict()
 
         for i in range(1, consumable_number + 1):
@@ -46,23 +48,33 @@ class SNMP():
         for key_top, value_dict in uncleaned_dict.items():
             capacity = None
             level = None
+            colorant = None
 
             for key, value in value_dict.items():
                 if key == 'capacity':
                     capacity = value
                 elif key == 'level':
                     level = value
+                elif key == 'colorant':
+                    colorant = value
             
             # Key cleanup
-            key_top = key_top.rstrip('\x00')
+            module_name = self.session.get(".1.3.6.1.2.1.43.12.1.1.4.1." + str(colorant)).value
+            
+            if module_name == "NOSUCHINSTANCE":
+                module_name = key_top.rstrip('\x00')
+            else:
+                module_name = re.sub(r"(\w)([A-Z])", r"\1 \2", module_name)
+                module_name = module_name.title()
+
 
             # Level Cleanup
             if str(level) == '-3':
-                levels_dict[key_top] = 'OK'
+                levels_dict[module_name] = 'OK'
             elif str(level) == '-2':
-                levels_dict[key_top] = 'NA'
+                levels_dict[module_name] = 'NA'
             else:
                 level_percentage = float(level) / float(capacity) * 100
-                levels_dict[key_top] = "{:.0f}".format(level_percentage)
+                levels_dict[module_name] = "{:.0f}".format(level_percentage)
 
         return levels_dict
