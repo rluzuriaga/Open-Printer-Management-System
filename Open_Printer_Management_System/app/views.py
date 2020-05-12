@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect
+from django.utils import timezone
 
 from .forms import AddPrinterForm
-from .models import Printer
+from .models import Printer, TonerLevel
+
+from datetime import timedelta
 
 def homepage(request):
     if request.method == 'POST':
@@ -17,9 +20,13 @@ def homepage(request):
     all_departments = Printer.objects.filter().values('department_name').distinct()
     all_printer_objects = Printer.objects.all().order_by('department_name', 'printer_name')
 
-    return render(request, 'app/home.html',
-                  {'form': form, 'all_departments': all_departments,
-                   'all_printers': all_printer_objects})
+    time_threshold = timezone.now() - timedelta(hours=1, minutes=2)
+    all_toner_levels = TonerLevel.objects.filter(date_time__gt=time_threshold)
+
+    return render(request, 'app/home.html', {
+        'form': form, 'all_departments': all_departments,
+        'all_printers': all_printer_objects, 'all_toner_levels': all_toner_levels
+    })
 
 def run_form_function(form):
     printer_name = form.cleaned_data['printer_name']
