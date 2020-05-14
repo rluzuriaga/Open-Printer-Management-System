@@ -1,6 +1,5 @@
 from django.db import models
-
-from datetime import timedelta
+from django.conf import settings
 from django.utils import timezone
 
 class Printer(models.Model):
@@ -61,7 +60,7 @@ def update_database(printer_levels_dict):
                 }
     '''
     # Check for redundancy. If the database already has the same toner levels just update the datetime field.
-    time_threshold = timezone.now() - timedelta(hours=1)
+    time_threshold = timezone.now() - settings.TIMEDELTA
     query = TonerLevel.objects.filter(date_time__gt=time_threshold)
 
     for key_top, value_dict in printer_levels_dict.items():

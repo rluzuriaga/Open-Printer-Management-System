@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.core.management import call_command
+from django.conf import settings
 
 from .forms import AddPrinterForm
 from .models import Printer, TonerLevel
 
-from datetime import timedelta
 
 def homepage(request):
     if request.method == 'POST':
@@ -21,7 +21,7 @@ def homepage(request):
     all_departments = Printer.objects.filter().values('department_name').distinct()
     all_printer_objects = Printer.objects.all().order_by('department_name', 'printer_name')
 
-    time_threshold = timezone.now() - timedelta(hours=1, minutes=2)
+    time_threshold = timezone.now() - settings.TIMEDELTA
     all_toner_levels = TonerLevel.objects.filter(date_time__gt=time_threshold)
 
     return render(request, 'app/home.html', {
