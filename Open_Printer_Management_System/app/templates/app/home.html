@@ -27,7 +27,29 @@
                 
                 {% for printer_levels in all_toner_levels %}
                   {% if printer.printer_name == printer_levels.printer_name|stringformat:"s" %}
-                    <p class="card-text"><strong>{{ printer_levels.module_identifier }}:</strong> {{ printer_levels.level }}%</p>
+                    <p class="card-text"><strong>{{ printer_levels.module_identifier }}:</strong><br>
+
+                    {% if printer_levels.level == "OK" %}
+                      {{ printer_levels.level }}<p>
+                    {% else %}
+                      <div class="progress position-relative">
+                        {% comment %} Use |add:"0" to convert string to int for comparison {% endcomment %}
+                        {% if printer_levels.level|add:"0" >= 50 %}
+                          <div class="progress-bar bg-success" role="progressbar" style="width: {{ printer_levels.level }}%" aria-valuenow="{{ printer_levels.level }}" aria-valuemin="0" aria-valuemax="100">{{ printer_levels.level }}%</div>
+                              
+                        {% elif printer_levels.level|add:"0" < 50 and printer_levels.level|add:"0" > 10 %}
+                          <div class="progress-bar bg-warning" role="progressbar" style="width: {{ printer_levels.level }}%;" aria-valuenow="{{ printer_levels.level }}" aria-valuemin="0" aria-valuemax="100">{{ printer_levels.level }}%</div>
+                              
+                        {% else %}
+                          <div class="progress-bar bg-danger" role="progressbar" style="width: {{ printer_levels.level }}%;" aria-valuenow="{{ printer_levels.level }}" aria-valuemin="0" aria-valuemax="100"></div>
+                          <p class="justify-content-center d-flex position-absolute w-100"><strong>{{ printer_levels.level }}%</strong></p>
+
+                        {% endif %}
+
+                      </div>
+                    {% endif %}
+                    </p>
+
                   {% endif %}
                 {% endfor %}
 
