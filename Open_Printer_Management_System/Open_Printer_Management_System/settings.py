@@ -26,7 +26,7 @@ SECRET_KEY = '$_qxxc37sx#e5k96_ar^vf@vabu73di6-=qv5nd)pjd$&mhw@!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -133,4 +133,4 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-TIMEDELTA = timedelta(hours=1)
+TIMEDELTA = timedelta(minutes=25)
