@@ -2,72 +2,85 @@
 {% load static %}
 
 {% block content %}
-<div class="album py-5 bg-light">
+
+<div class="album">
   <div class="container">
+  
+    {% for department in all_departments %}
+      <div class="row">
+        <h2>{{ department.department_name }}</h2>
+      </div>
+      <br>
 
-  {% for department_name in all_departments %}
-    <div class="row">
-      <h2>{{ department_name.department_name }}</h2>
-    </div>
-    <br>
+      <div class="row">
 
-    <div class="row">
+        {% for printer in all_printers %}
 
-      {% for printer in all_printers %}
+          {% if printer.department_name == department.department_name %}
 
-        {% if printer.department_name == department_name.department_name %}
-          <div class="col-md-4">
-            <div class="card mb-4 box-shadow">
-              {% comment %} <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap"> {% endcomment %}
-              <div class="card-body">
-                <h3 class="card-title">{{ printer.printer_name }}</h3>
-                <p class="card-title">Location: {{ printer.printer_location }}</p>
-                <p class="card-title">IP Address: {{ printer.ip_address }}</p>
-                <br>
-                
-                {% for printer_levels in all_toner_levels %}
-                  {% if printer.printer_name == printer_levels.printer_name|stringformat:"s" %}
-                    <p class="card-text"><strong>{{ printer_levels.module_identifier }}:</strong><br>
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                {% comment %} <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap"> {% endcomment %}
+                <div class="card-body">
+                  <h3 class="card-title">{{ printer.printer_name }}</h3>
 
-                    {% if printer_levels.level == "OK" %}
-                      {{ printer_levels.level }}<p>
-                    {% else %}
-                      <div class="progress position-relative">
-                        {% comment %} Use |add:"0" to convert string to int for comparison {% endcomment %}
-                        {% if printer_levels.level|add:"0" >= 50 %}
-                          <div class="progress-bar bg-success" role="progressbar" style="width: {{ printer_levels.level }}%" aria-valuenow="{{ printer_levels.level }}" aria-valuemin="0" aria-valuemax="100">{{ printer_levels.level }}%</div>
-                              
-                        {% elif printer_levels.level|add:"0" < 50 and printer_levels.level|add:"0" > 10 %}
-                          <div class="progress-bar bg-warning" role="progressbar" style="width: {{ printer_levels.level }}%;" aria-valuenow="{{ printer_levels.level }}" aria-valuemin="0" aria-valuemax="100">{{ printer_levels.level }}%</div>
-                              
-                        {% else %}
-                          <div class="progress-bar bg-danger" role="progressbar" style="width: {{ printer_levels.level }}%;" aria-valuenow="{{ printer_levels.level }}" aria-valuemin="0" aria-valuemax="100"></div>
-                          <p class="justify-content-center d-flex position-absolute w-100"><strong>{{ printer_levels.level }}%</strong></p>
-
-                        {% endif %}
-
-                      </div>
-                    {% endif %}
-                    </p>
-
+                  {% if show_location %}
+                    <p class="card-title">Location: {{ printer.printer_location }}</p>
                   {% endif %}
-                {% endfor %}
+                  
+                  {% if show_ip %}
+                    <p class="card-title">IP Address: {{ printer.ip_address }}</p>
+                  {% endif %}
+                  <br>
+                  
+                  {% for printer_levels in all_toner_levels %}
 
+                    {% if printer.printer_name == printer_levels.printer_name|stringformat:"s" %}
+                      <p class="card-text"><strong>{{ printer_levels.module_identifier }}:</strong><br>
+
+                        {% if printer_levels.level == "OK" %}
+                          {{ printer_levels.level }}
+                        {% else %}
+                          <div class="progress position-relative" style="height: 18px;">
+                            {% comment %} Use |add:"0" to convert string to int for comparison {% endcomment %}
+                            {% if printer_levels.level|add:"0" >= 50 %}
+                              <div class="progress-bar bg-success" role="progressbar" style="width: {{ printer_levels.level }}%;" aria-valuenow="{{ printer_levels.level }}" aria-valuemin="0" aria-valuemax="100">{{ printer_levels.level }}%</div>
+                                  
+                            {% elif printer_levels.level|add:"0" < 50 and printer_levels.level|add:"0" > 10 %}
+                              <div class="progress-bar bg-warning" role="progressbar" style="width: {{ printer_levels.level }}%;" aria-valuenow="{{ printer_levels.level }}" aria-valuemin="0" aria-valuemax="100">{{ printer_levels.level }}%</div>
+                                  
+                            {% else %}
+                              <div class="progress-bar bg-danger" role="progressbar" style="width: {{ printer_levels.level }}%;" aria-valuenow="{{ printer_levels.level }}" aria-valuemin="0" aria-valuemax="100">
+                                <p class="justify-content-center d-flex position-absolute w-100" style="color: black;"><strong>{{ printer_levels.level }}%</strong></p>
+                              </div>                              
+
+                            {% endif %}
+
+                          </div>
+                        {% endif %}
+                      </p>
+
+                    {% endif %}
+
+                  {% endfor %}
+
+                </div>
               </div>
             </div>
-          </div>
-        {% endif %}
-      
-      {% endfor %}
 
-    </div>
+          {% endif %}
+        
+        {% endfor %}
 
-  {% empty %}
-    <h3>You don't have any printers added.</h3>
+      </div>
     <br>
-    <h5>Click on "Add Printer" on the top bar to start.</h5>
 
-  {% endfor %}
+    {% empty %}
+      <h3>You don't have any printers added.</h3>
+      <br>
+      <h5>Click on "Add Printer" on the top bar to start.</h5>
+    {% endfor %}
+
   </div>
 </div>
 
