@@ -15,3 +15,24 @@ class AddPrinterForm(forms.ModelForm):
     class Meta:
         model = Printer
         fields = ['printer_name', 'printer_model_name', 'printer_location', 'ip_address', 'department_name']
+
+class SiteToggles(forms.Form):
+    ip_address = forms.BooleanField(required=False, initial=True, label="Show IP Address",
+        widget=forms.CheckboxInput(
+            attrs={
+                'class': 'custom-control-input',
+                'id': 'ip_address',
+                'onChange': 'this.form.submit()'
+            }
+        )
+    )
+
+    location = forms.BooleanField(required=False, initial=True, label="Show Printer Location",
+        widget=forms.CheckboxInput(
+            attrs={
+                'class': 'custom-control-input',
+                'id': 'location',
+                'onChange': 'this.form.submit()'
+            }
+        )
+    )
