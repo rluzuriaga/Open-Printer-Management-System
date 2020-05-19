@@ -9,17 +9,17 @@
     <title>Open Printer Management System</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
 
     <!-- Custom styles for this template -->
     <link href="{% static 'css/album.css' %}" rel="stylesheet">
   </head>
 
-  <body>
+  <body class="bg-light">
     <header class="pb-5">
       <nav class="navbar fixed-top navbar-dark bg-dark">
         <div class="container d-flex justify-content-between">
-          <div style='color: white; font-size: large;'><strong>Open Printer Inventory Manager</strong></div>
+          <a class="navbar-brand text-left" style='color: white; font-size: large;' href="{% url 'homepage' %}"><strong>Open Printer Inventory Manager</strong></a>
           <ul class="nav">
             <li class="nav-item">
               <a class="nav-link" style="color: white; font-size: large;" href="#" data-toggle="modal" data-target="#addPrinterModal">Add Printer</a>
@@ -31,6 +31,30 @@
         </div>
       </nav>
     </header>
+
+    <br>
+    <div class="container">
+      <form method="post" id="toggles_form">
+      {% csrf_token %}
+        <div class="row py-3">
+          <div class="col">
+            <p>Last updated: {{ last_updated }}</p>
+          </div>
+          <div class="col-3">
+            <div class="custom-control custom-switch">
+              {{ toggles_form.location }}
+              <label class="custom-control-label" for="{{ toggles_form.location.name }}" >{{ toggles_form.location.label }}</label>
+            </div>
+          </div>
+          <div class="col-2">
+            <div class="custom-control custom-switch">
+              {{ toggles_form.ip_address }}
+              <label class="custom-control-label" for="{{ toggles_form.ip_address.name }}" >{{ toggles_form.ip_address.label }}</label>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>   
 
     <main role="main">
       {% block content %}
