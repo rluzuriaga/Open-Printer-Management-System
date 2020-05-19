@@ -36,7 +36,7 @@ class TonerLevel(models.Model):
     printer_name = models.ForeignKey(Printer, on_delete=models.CASCADE)
     date_time = models.DateTimeField(auto_now_add=True)
     module_identifier = models.CharField(
-        max_length=20,
+        max_length=50,
         help_text="Identifier for the toners or units. Example. Magenta OR Toner Collection Unit."
     )
     level = models.CharField(max_length=3, help_text="This should be either a percentage (0 - 100 without the percent sign) or OK or NA.")
