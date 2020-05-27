@@ -28,6 +28,7 @@ class Printer(models.Model):
         max_length=50,
         help_text="What department is this printer in?"
     )
+    snmp_version = models.IntegerField('SNMP Version', default=1)
 
     def __str__(self):
         return self.printer_name
@@ -53,30 +54,15 @@ def update_database(printer_levels_dict):
                 {
                     'PRINTER NAME': {
                         'MODULE IDENTIFIER/TONER COLOR': 'LEVEL',
-                        'Cyan Cartridge 508A HP CF361A': '13', ...
+                        'Cyan': '13', ...
                     },
                     '8X11_2232': {...}
                     ...
                 }
     '''
-    # Check for redundancy. If the database already has the same toner levels just update the datetime field.
-    time_threshold = timezone.now() - settings.TIMEDELTA
-    query = TonerLevel.objects.filter(date_time__gt=time_threshold)
 
     for key_top, value_dict in printer_levels_dict.items():
         for key, value in value_dict.items():
-            # If the value of the toner data already in the database (up to an hour before) is the same as the printer_levels_dict
-            #   then the database doesn't get updated
-            try:
-                query_check = query.get(
-                    printer_name=Printer.objects.get(printer_name=key_top),
-                    module_identifier=key).level
-            except TonerLevel.DoesNotExist:
-                query_check = {}
-
-            if len(query_check) != 0 and query_check == value:
-                continue
-
             TonerLevel.objects.create(
                 printer_name=Printer.objects.get(printer_name=key_top),
                 module_identifier=key,
