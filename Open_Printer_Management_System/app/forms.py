@@ -27,11 +27,21 @@ class SiteToggles(forms.Form):
         )
     )
 
-    location = forms.BooleanField(required=False, initial=True, label="Show Printer Location",
+    location = forms.BooleanField(required=False, initial=True, label="Show Location",
         widget=forms.CheckboxInput(
             attrs={
                 'class': 'custom-control-input',
                 'id': 'location',
+                'onChange': 'this.form.submit()'
+            }
+        )
+    )
+
+    printer_model = forms.BooleanField(required=False, initial=False, label="Show Model",
+        widget=forms.CheckboxInput(
+            attrs={
+                'class': 'custom-control-input',
+                'id': 'printer_model',
                 'onChange': 'this.form.submit()'
             }
         )
