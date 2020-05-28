@@ -31,16 +31,31 @@
         </div>
       </nav>
     </header>
+  
+    {% if messages %}
+      <br>
+      <div class="container">
+        {% for message in messages %}
+          <div class="alert {{ message.tags }} alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
     <br>
     <div class="container">
       <form method="post" id="toggles_form">
       {% csrf_token %}
         <div class="row py-3">
+
           <div class="col">
             <p>Last updated: {{ last_updated }}</p>
           </div>
-          <div class="col-3">
+          <div class="col-2">
             <div class="custom-control custom-switch">
               {{ toggles_form.location }}
               <label class="custom-control-label" for="{{ toggles_form.location.name }}" >{{ toggles_form.location.label }}</label>
@@ -52,6 +67,13 @@
               <label class="custom-control-label" for="{{ toggles_form.ip_address.name }}" >{{ toggles_form.ip_address.label }}</label>
             </div>
           </div>
+          <div class="col-2">
+            <div class="custom-control custom-switch">
+              {{ toggles_form.printer_model }}
+              <label class="custom-control-label" for="{{ toggles_form.printer_model.name }}" >{{ toggles_form.printer_model.label }}</label>
+            </div>
+          </div>
+
         </div>
       </form>
     </div>   
