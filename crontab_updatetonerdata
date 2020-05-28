@@ -1,0 +1,2 @@
+MAILTO=""
+*/10 * * * * /path/to/project/Open-Printer-Management-System/updatetonerdata.sh
