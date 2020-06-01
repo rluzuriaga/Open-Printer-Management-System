@@ -6,10 +6,10 @@ from django.conf import settings
 from .forms import AddPrinterForm, SiteToggles
 from .models import Printer, TonerLevel
 
-
 def homepage(request):
     show_location = True
     show_ip = True
+    show_printer_model = False
 
     if request.method == 'GET':
         form = AddPrinterForm()
@@ -26,6 +26,8 @@ def homepage(request):
                 show_location = False
             if not toggles_form.cleaned_data['ip_address']:
                 show_ip = False
+            if toggles_form.cleaned_data['printer_model']:
+                show_printer_model = True
 
     all_departments = Printer.objects.filter().values('department_name').distinct()
     all_printer_objects = Printer.objects.all().order_by('department_name', 'printer_name')
@@ -36,8 +38,8 @@ def homepage(request):
     last_update_obj = TonerLevel.objects.filter().values('date_time').order_by('-date_time').distinct()[0]['date_time']
 
     return render(request, 'app/home.html', {
-        'form': form, 'toggles_form': toggles_form,'show_location': show_location,
-        'show_ip': show_ip, 'all_departments': all_departments, 'all_printers': all_printer_objects,
+        'form': form, 'toggles_form': toggles_form,'show_location': show_location, 'show_ip': show_ip, 
+        'show_printer_model': show_printer_model, 'all_departments': all_departments, 'all_printers': all_printer_objects,
         'all_toner_levels': all_toner_levels, 'last_updated': last_update_obj
     })
 
