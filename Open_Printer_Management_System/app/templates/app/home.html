@@ -31,15 +31,22 @@
                   {% if show_ip %}
                     <p class="card-title">IP Address: {{ printer.ip_address }}</p>
                   {% endif %}
+
+                  {% if show_printer_model %}
+                    <p class="card-title">Printer Model: {{ printer.printer_model_name }}</p>
+                  {% endif %}
                   <br>
                   
                   {% for printer_levels in all_toner_levels %}
 
                     {% if printer.printer_name == printer_levels.printer_name|stringformat:"s" %}
-                      <p class="card-text"><strong>{{ printer_levels.module_identifier }}:</strong><br>
+
+                      <p class="card-text"><strong>{{ printer_levels.module_identifier }}</strong><br>
 
                         {% if printer_levels.level == "OK" %}
                           {{ printer_levels.level }}
+                        {% elif printer_levels.level == "Not on" %}
+                        {% comment %} This is here to not add a progressbar when the printer is off. {% endcomment %}
                         {% else %}
                           <div class="progress position-relative" style="height: 18px;">
                             {% comment %} Use |add:"0" to convert string to int for comparison {% endcomment %}
