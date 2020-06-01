@@ -7,14 +7,13 @@ class AddPrinterForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['printer_name'].widget.attrs.update(size='34')
-        self.fields['printer_model_name'].widget.attrs.update(size='34')
         self.fields['printer_location'].widget.attrs.update(size='34')
         self.fields['ip_address'].widget.attrs.update(size='34')
         self.fields['department_name'].widget.attrs.update(size='34')
     
     class Meta:
         model = Printer
-        fields = ['printer_name', 'printer_model_name', 'printer_location', 'ip_address', 'department_name']
+        fields = ['printer_name', 'printer_location', 'ip_address', 'department_name']
 
 class SiteToggles(forms.Form):
     ip_address = forms.BooleanField(required=False, initial=True, label="Show IP Address",
