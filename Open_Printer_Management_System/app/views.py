@@ -2,9 +2,11 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.core.management import call_command
 from django.conf import settings
+from django.contrib import messages
 
 from .forms import AddPrinterForm, SiteToggles
 from .models import Printer, TonerLevel
+from .snmp import determine_snmp_version, determine_printer_model
 
 def homepage(request):
     show_location = True
@@ -18,7 +20,14 @@ def homepage(request):
         form = AddPrinterForm(request.POST)
 
         if form.is_valid():
-            run_form_function(form)
+            try:
+                add_printer_form_function(form, request)
+            except PrinterOffException:
+                messages.error(request, 'Printer not added. Make sure you have the correct IP address for the printer and the printer is on.')
+                return redirect('homepage')
+            except PrinterNotAddedException:
+                messages.error(request, 'UNEXPECTED ERROR: Could not add printer.')
+                return redirect('homepage')
         
         toggles_form = SiteToggles(request.POST)
         if toggles_form.is_valid():
@@ -43,19 +52,29 @@ def homepage(request):
         'all_toner_levels': all_toner_levels, 'last_updated': last_update_obj
     })
 
-def run_form_function(form):
+def add_printer_form_function(form, request):
     printer_name = form.cleaned_data['printer_name']
-    printer_model_name = form.cleaned_data['printer_model_name']
     printer_location = form.cleaned_data['printer_location']
     ip_address = form.cleaned_data['ip_address']
     department_name = form.cleaned_data['department_name']
+
+    version = determine_snmp_version(ip_address)
+    if version == -1:
+        raise PrinterOffException
+    elif version == -2:
+        raise PrinterNotAddedException
+
+    printer_model_name = determine_printer_model(ip_address, version)
+    if printer_model_name == -1:
+        raise PrinterNotAddedException
 
     Printer.objects.create(
         printer_name=printer_name,
         printer_model_name=printer_model_name,
         printer_location=printer_location,
         ip_address=ip_address,
-        department_name=department_name
+        department_name=department_name,
+        snmp_version=version
     )
 
     extra_data = f'-n {printer_name} -i {ip_address}'
@@ -64,3 +83,9 @@ def run_form_function(form):
 def refresh_toner(request):
     call_command('updatetonerdata')
     return redirect('homepage')
+
+class PrinterOffException(Exception):
+    pass
+
+class PrinterNotAddedException(Exception):
+    pass
