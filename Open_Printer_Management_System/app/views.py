@@ -42,14 +42,19 @@ def homepage(request):
     all_printer_objects = Printer.objects.all().order_by('department_name', 'printer_name')
 
     time_threshold = timezone.now() - settings.TIMEDELTA
-    all_toner_levels = TonerLevel.objects.filter(date_time__gt=time_threshold)
+    all_toner_levels = TonerLevel.objects.filter(date_time__gte=time_threshold).distinct().order_by('printer_name', 'module_identifier')
 
-    last_update_obj = TonerLevel.objects.filter().values('date_time').order_by('-date_time').distinct()[0]['date_time']
+    clean_toner_levels = toner_level_cleanup(all_toner_levels)
+    
+    try:
+        last_update_obj = TonerLevel.objects.filter().values('date_time').order_by('-date_time').distinct()[0]['date_time']
+    except IndexError:
+        last_update_obj = None
 
     return render(request, 'app/home.html', {
         'form': form, 'toggles_form': toggles_form,'show_location': show_location, 'show_ip': show_ip, 
         'show_printer_model': show_printer_model, 'all_departments': all_departments, 'all_printers': all_printer_objects,
-        'all_toner_levels': all_toner_levels, 'last_updated': last_update_obj
+        'all_toner_levels': clean_toner_levels, 'last_updated': last_update_obj
     })
 
 def add_printer_form_function(form, request):
@@ -83,6 +88,23 @@ def add_printer_form_function(form, request):
 def refresh_toner(request):
     call_command('updatetonerdata')
     return redirect('homepage')
+
+def toner_level_cleanup(all_toner_levels):
+    new_all_toner_levels = list()
+    printer_name = None
+    module_id = None
+    level = None
+
+    for obj in all_toner_levels:
+        if printer_name == obj.printer_name and module_id == obj.module_identifier and level == obj.level:
+            continue
+        else:
+            new_all_toner_levels.append(obj)
+            printer_name = obj.printer_name
+            module_id = obj.module_identifier
+            level = obj.level
+    
+    return new_all_toner_levels
 
 class PrinterOffException(Exception):
     pass
