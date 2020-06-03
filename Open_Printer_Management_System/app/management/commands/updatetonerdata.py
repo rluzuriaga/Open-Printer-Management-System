@@ -17,7 +17,9 @@ class Command(BaseCommand):
         printer_levels_dict = dict()
 
         if ip and name:
-            levels_dict = SNMP(ip).get_consumable_levels()
+            version = Printer.objects.get(ip_address=ip).snmp_version
+
+            levels_dict = SNMP(ip, version).get_consumable_levels()
             printer_levels_dict[name] = levels_dict
             update_database(printer_levels_dict)
             return
@@ -27,7 +29,9 @@ class Command(BaseCommand):
         printer_dict = {printer.printer_name: printer.ip_address for printer in all_printers_object}
 
         for printer_name, ip_address in printer_dict.items():
-            levels_dict = SNMP(ip_address).get_consumable_levels()
+            version = Printer.objects.get(ip_address=ip_address).snmp_version
+
+            levels_dict = SNMP(ip_address, version).get_consumable_levels()
             printer_levels_dict[printer_name] = levels_dict
         
         update_database(printer_levels_dict)
