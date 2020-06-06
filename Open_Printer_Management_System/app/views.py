@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.core.management import call_command
 from django.conf import settings
 from django.contrib import messages
+from django.utils.safestring import mark_safe
 
 from .forms import AddPrinterForm, SiteToggles
 from .models import Printer, TonerLevel
@@ -23,10 +24,18 @@ def homepage(request):
             try:
                 add_printer_form_function(form, request)
             except PrinterOffException:
-                messages.error(request, 'Printer not added. Make sure you have the correct IP address for the printer and the printer is on.')
+                messages.error(request,
+                    'Printer not added. Make sure you have the correct IP address for the printer and the printer is on.'
+                )
                 return redirect('homepage')
             except PrinterNotAddedException:
                 messages.error(request, 'UNEXPECTED ERROR: Could not add printer.')
+                return redirect('homepage')
+            except NoSNMPDataException:
+                messages.error(request, mark_safe(
+                    "ERROR: Could not add printer. The printer doesn't have usable SNMP data.</br>"
+                    "Printer may be too old or firmware may need to be updated."
+                ))
                 return redirect('homepage')
         
         toggles_form = SiteToggles(request.POST)
@@ -70,8 +79,10 @@ def add_printer_form_function(form, request):
         raise PrinterNotAddedException
 
     printer_model_name = determine_printer_model(ip_address, version)
-    if printer_model_name == -1:
+    if printer_model_name == -2:
         raise PrinterNotAddedException
+    elif printer_model_name == -3:
+        raise NoSNMPDataException
 
     Printer.objects.create(
         printer_name=printer_name,
@@ -110,4 +121,7 @@ class PrinterOffException(Exception):
     pass
 
 class PrinterNotAddedException(Exception):
+    pass
+
+class NoSNMPDataException(Exception):
     pass

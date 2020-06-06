@@ -108,6 +108,9 @@ def determine_printer_model(hostname, version):
     try:
         printer_model_name = session.get('.1.3.6.1.2.1.25.3.2.1.3.1').value
     except SystemError:
-        return -1
+        return -2
+
+    if str(printer_model_name) == "NOSUCHINSTANCE":
+        return -3
     
     return printer_model_name
