@@ -15,14 +15,14 @@ def homepage(request):
     show_printer_model = False
 
     if request.method == 'GET':
-        form = AddPrinterForm()
+        add_printer_form = AddPrinterForm()
         toggles_form = SiteToggles()
     else:
-        form = AddPrinterForm(request.POST)
+        add_printer_form = AddPrinterForm(request.POST)
 
-        if form.is_valid():
+        if add_printer_form.is_valid():
             try:
-                add_printer_form_function(form, request)
+                add_printer_form_function(add_printer_form)
             except PrinterOffException:
                 messages.error(request,
                     'Printer not added. Make sure you have the correct IP address for the printer and the printer is on.'
@@ -37,6 +37,15 @@ def homepage(request):
                     "Printer may be too old or firmware may need to be updated."
                 ))
                 return redirect('homepage')
+        else:
+            # Currently, only one error gets checked from the form (ip_address)
+            # Instead of displaying the error in the form, I am displaying using messages
+            for error in add_printer_form.errors.values():
+                error = list(error)[0]
+                messages.error(request, mark_safe(
+                    "ERROR: " + str(error) + "</br>Printer not added."
+                ))
+            return redirect('homepage')
         
         toggles_form = SiteToggles(request.POST)
         if toggles_form.is_valid():
@@ -61,12 +70,12 @@ def homepage(request):
         last_update_obj = None
 
     return render(request, 'app/home.html', {
-        'form': form, 'toggles_form': toggles_form,'show_location': show_location, 'show_ip': show_ip, 
+        'add_printer_form': add_printer_form, 'toggles_form': toggles_form,'show_location': show_location, 'show_ip': show_ip, 
         'show_printer_model': show_printer_model, 'all_departments': all_departments, 'all_printers': all_printer_objects,
         'all_toner_levels': clean_toner_levels, 'last_updated': last_update_obj
     })
 
-def add_printer_form_function(form, request):
+def add_printer_form_function(form):
     printer_name = form.cleaned_data['printer_name']
     printer_location = form.cleaned_data['printer_location']
     ip_address = form.cleaned_data['ip_address']
