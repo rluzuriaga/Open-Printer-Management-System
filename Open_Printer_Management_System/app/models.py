@@ -21,6 +21,7 @@ class Printer(models.Model):
     ip_address = models.CharField(
         'IP Address',
         max_length=15,
+        unique=True,
         help_text="IPv4 address of the printer."
     )
     department_name = models.CharField(
