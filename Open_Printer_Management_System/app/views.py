@@ -1,8 +1,8 @@
-from django.shortcuts import render, redirect
-from django.utils import timezone
-from django.core.management import call_command
 from django.conf import settings
 from django.contrib import messages
+from django.core.management import call_command
+from django.shortcuts import render, redirect
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 from .forms import AddPrinterForm, SiteToggles
@@ -10,6 +10,43 @@ from .models import Printer, TonerLevel
 from .snmp import determine_snmp_version, determine_printer_model
 
 def homepage(request):
+    """
+    Display the main page with all of the printers and their data (toners, location, IP address, and printer model).
+
+    **Context**
+        ``add_printer_form``
+            Instance of the form to add a printer in the front-end interface.
+        
+        ``toggles_form``
+            Instance of the form that changes the values of ``show_location``, ``show_ip``, and ``show_printer_model``.
+        
+        ``show_location``
+            Boolean variable to show/hide the location data of the printers.
+        
+        ``show_ip``
+            Boolean variable to show/hide the IP address data of the printers.
+        
+        ``show_printer_model``
+            Boolean variable to show/hide the printer model data of the printers.
+        
+        ``all_departments``
+            An instance of :model:`app.Printer` displaying only the distinct departments for the printers. 
+        
+        ``all_printers``
+            An instrance of :model:`app.Printer` with all the printers ordered by ``department_name`` and ``printer_name``.
+        
+        ``all_toner_levels``
+            An instance of :model:`app.TonerLevel` filtering byt ``date_time`` using the time threshold specified in ``settings.py``, 
+            distinct, and ordered by ``printer_name`` and ``module_identifier``.
+
+        ``last_updated``
+            An instance of :model:`app.TonerLevel` displaying the latest date and time the toner data was updated. If there is no toner 
+            data, then the value is ``None``.
+    
+    **Template**
+        :template:`app/home.html`
+    """
+    # Initial toggle switch state
     show_location = True
     show_ip = True
     show_printer_model = False
@@ -20,6 +57,9 @@ def homepage(request):
     else:
         add_printer_form = AddPrinterForm(request.POST)
 
+        # if the form is complete and there are no repeated IP addresses,
+        # then the add_printer_form_function will run. If the custom exceptions are raised,
+        # error messages will be sent to the template and redirect to the homepages.
         if add_printer_form.is_valid():
             try:
                 add_printer_form_function(add_printer_form)
@@ -47,6 +87,7 @@ def homepage(request):
                 ))
             return redirect('homepage')
         
+        # Controls the toggle switches to show/hide data from the printer cards
         toggles_form = SiteToggles(request.POST)
         if toggles_form.is_valid():
             if not toggles_form.cleaned_data['location']:
@@ -70,10 +111,20 @@ def homepage(request):
         last_update_obj = None
 
     return render(request, 'app/home.html', {
-        'add_printer_form': add_printer_form, 'toggles_form': toggles_form,'show_location': show_location, 'show_ip': show_ip, 
-        'show_printer_model': show_printer_model, 'all_departments': all_departments, 'all_printers': all_printer_objects,
-        'all_toner_levels': clean_toner_levels, 'last_updated': last_update_obj
+        'add_printer_form': add_printer_form, 'toggles_form': toggles_form, 'show_location': show_location,
+        'show_ip': show_ip, 'show_printer_model': show_printer_model, 'all_departments': all_departments,
+        'all_printers': all_printer_objects, 'all_toner_levels': clean_toner_levels, 'last_updated': last_update_obj
     })
+
+def refresh_toner(request):
+    """
+    View doesn't display any data.
+
+    The view calls the ``updatetonerdata`` management command to update all the toner levels outside of the 
+    time threshold set in ``settings.py`` then redirects back to :view:`app.homepage`.
+    """
+    call_command('updatetonerdata')
+    return redirect('homepage')
 
 def add_printer_form_function(form):
     printer_name = form.cleaned_data['printer_name']
@@ -104,10 +155,6 @@ def add_printer_form_function(form):
 
     extra_data = f'-n {printer_name} -i {ip_address}'
     call_command('updatetonerdata', extra_data)
-
-def refresh_toner(request):
-    call_command('updatetonerdata')
-    return redirect('homepage')
 
 def toner_level_cleanup(all_toner_levels):
     new_all_toner_levels = list()
