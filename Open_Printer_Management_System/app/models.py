@@ -3,6 +3,10 @@ from django.conf import settings
 from django.utils import timezone
 
 class Printer(models.Model):
+    """
+    Stores a single printer entry with the data (``printer_name``, ``printer_model_name``, 
+    ``printer_location``, ``ip_address``, ``department_name``, and ``snmp_version``.).
+    """
     printer_name = models.CharField(
         'Printer Name',
         max_length=75,
@@ -35,6 +39,10 @@ class Printer(models.Model):
         return self.printer_name
 
 class TonerLevel(models.Model):
+    """
+    Stores a single toner level for each module in each printer using 
+    (``printer_name`` from :model:`app.Printer`, ``date_time``, ``module_deintifier``, and ``level``).
+    """
     printer_name = models.ForeignKey(Printer, on_delete=models.CASCADE)
     date_time = models.DateTimeField(auto_now_add=True)
     module_identifier = models.CharField(
@@ -47,7 +55,7 @@ class TonerLevel(models.Model):
         return str(self.printer_name)
 
 def update_database(printer_levels_dict):
-    ''' Update the TonerLevel Table in the database with the information in the dictionary argument.
+    """ Update the TonerLevel Table in the database with the information in the dictionary argument.
 
     Args:
         printer_levels_dict (dict): Dictionary with toner levels data.
@@ -60,7 +68,7 @@ def update_database(printer_levels_dict):
                     '8X11_2232': {...}
                     ...
                 }
-    '''
+    """
 
     for key_top, value_dict in printer_levels_dict.items():
         for key, value in value_dict.items():
