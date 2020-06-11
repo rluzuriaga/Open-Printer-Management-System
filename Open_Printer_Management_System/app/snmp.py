@@ -1,11 +1,23 @@
 # sudo apt-get install libsnmp-dev snmp-mibs-downloader gcc python3-dev
 # pip install easysnmp
+from django.conf import settings
 
 import re
 from easysnmp import Session
 from easysnmp.exceptions import EasySNMPTimeoutError, EasySNMPConnectionError
 
 class SNMP():
+    """ 
+
+    Args:
+        hostname (str): IPv4 address for the printer.
+        version (int): SNMP version for the printer.
+
+    Attributes:
+        hostname (str): IPv4 address for the printer.
+        version (int): SNMP version for the printer.
+        session (easysnmp.Session): SNMP session for the printer with the given hostname and version.
+    """
     def __init__(self, hostname, version):
         self.hostname = hostname
         self.version = version
@@ -13,33 +25,54 @@ class SNMP():
         self.session = Session(hostname=self.hostname, community='public', version=self.version)
 
     def get_consumable_levels(self):
+        """ Create a dictionary with the toner levels of a printer ready to update the database.
+
+        Returns:
+            cleaned_levels_dict (dict): Dictionary with the toner levels data ready 
+                for updating the database.
+        """
+        # Try to get an integer of how many toners the printer has
+        # If the printer is off it would raise one of the below exception and a dictionary
+        #   is returned that gets used in the template to show the printer is off
         try:
-            consumable_number = len(self.session.walk(".1.3.6.1.2.1.43.11.1.1.6.1"))
+            number_of_consumables = len(self.session.walk(".1.3.6.1.2.1.43.11.1.1.6.1"))
         except (SystemError, EasySNMPTimeoutError, EasySNMPConnectionError):
-            res = {"Printer seems to be off": "Not on"}
-            return res                    
 
-        res = dict()
+            # The text in this dictionay is checked in the template, so don't change it
+            #   without changing the template if statement as well.
+            consumables_dict = {"Printer seems to be off": "Not on"}
+            return consumables_dict                    
 
-        for i in range(1, consumable_number + 1):
+        consumables_dict = dict()
+
+        # Iterate through each toner/module and add the colorant, capacity, and level
+        #   of each one in the consumables_dict.
+        for i in range(1, number_of_consumables + 1):
+            # The toner/module name
             key = self.session.get(".1.3.6.1.2.1.43.11.1.1.6.1." + str(i)).value
-            res[key] = dict()
+            
+            consumables_dict[key] = dict()
 
-            res[key]['colorant'] = self.session.get(".1.3.6.1.2.1.43.11.1.1.3.1." + str(i)).value
+            # Integer with the SNMP value of the toner/module
+            consumables_dict[key]['colorant'] = self.session.get(".1.3.6.1.2.1.43.11.1.1.3.1." + str(i)).value
 
-            res[key]['class'] = self.session.get(".1.3.6.1.2.1.43.11.1.1.4.1." + str(i)).value
-            res[key]['type'] = self.session.get(".1.3.6.1.2.1.43.11.1.1.5.1." + str(i)).value
+            consumables_dict[key]['capacity'] = self.session.get(".1.3.6.1.2.1.43.11.1.1.8.1." + str(i)).value
+            consumables_dict[key]['level'] = self.session.get(".1.3.6.1.2.1.43.11.1.1.9.1." + str(i)).value
 
-            res[key]['units'] = self.session.get(".1.3.6.1.2.1.43.11.1.1.7.1." + str(i)).value
-            res[key]['capacity'] = self.session.get(".1.3.6.1.2.1.43.11.1.1.8.1." + str(i)).value
-            res[key]['level'] = self.session.get(".1.3.6.1.2.1.43.11.1.1.9.1." + str(i)).value
-
-        # Cleanup the data
-        cleaned_levels_dict = self._data_cleanup(res)
+        # Cleanup the data to make it ready to update the database
+        cleaned_levels_dict = self._data_cleanup(consumables_dict)
 
         return cleaned_levels_dict
 
     def _data_cleanup(self, uncleaned_dict):
+        """ Internal function to clean a dictionary and make it the format to easily update the database.
+        
+        Args:
+            uncleaned_dict (dict):
+        
+        Returns:
+            levels_dict (dict):
+        """
         levels_dict = dict()
 
         for key_top, value_dict in uncleaned_dict.items():
@@ -75,6 +108,7 @@ class SNMP():
                 levels_dict[module_name] = "{:.0f}".format(level_percentage)
 
         return levels_dict
+
 
 def determine_snmp_version(hostname):
     version = -1
