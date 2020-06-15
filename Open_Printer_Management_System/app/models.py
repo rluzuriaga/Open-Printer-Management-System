@@ -59,15 +59,15 @@ def update_database(printer_levels_dict):
 
     Args:
         printer_levels_dict (dict): Dictionary with toner levels data.
-            DICTIONARY STRUCTURE:
-                {
-                    'PRINTER NAME': {
-                        'MODULE IDENTIFIER/TONER COLOR': 'LEVEL',
-                        'Cyan': '13', ...
-                    },
-                    '8X11_2232': {...}
-                    ...
-                }
+        DICTIONARY STRUCTURE:
+            {
+                'PRINTER NAME': {
+                    'MODULE IDENTIFIER/TONER COLOR': 'LEVEL',
+                    'Cyan': '13', ...
+                },
+                '8X11_2232': {...}
+                ...
+            }
     """
 
     for key_top, value_dict in printer_levels_dict.items():
