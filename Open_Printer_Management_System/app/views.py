@@ -78,14 +78,20 @@ def homepage(request):
                 ))
                 return redirect('homepage')
         else:
-            # Currently, only one error gets checked from the form (ip_address).
-            # Instead of displaying the error in the form, I am displaying using messages.
-            for error in add_printer_form.errors.values():
-                error = list(error)[0]
-                messages.error(request, mark_safe(
-                    "ERROR: " + str(error) + "</br>Printer not added."
-                ))
-            return redirect('homepage')
+            # Need to check if the form submitted is add_printer_form.
+            # Without this check, the toggle switches stop working because Django doesn't know
+            #   that the add_printer_form is not the form that is being submitted so the error
+            #   message is sent and the toggle does not update.
+            if "add_printer_submit" in add_printer_form.data:
+
+                # Currently, only one error gets checked from the form (ip_address).
+                # Instead of displaying the error in the form, I am displaying using messages.
+                for error in add_printer_form.errors.values():
+                    error = list(error)[0]
+                    messages.error(request, mark_safe(
+                        "ERROR: " + str(error) + "</br>Printer not added."
+                    ))
+                return redirect('homepage')
         
         # Controls the toggle switches to show/hide data from the printer cards.
         toggles_form = SiteToggles(request.POST)
