@@ -58,7 +58,7 @@ class SNMP():
         # Iterate through each toner/module and add the colorant, capacity, and level
         #   of each one in the consumables_dict.
         for i in range(1, number_of_consumables + 1):
-            # The toner/module name
+            # The full toner/module name
             key = self.session.get(".1.3.6.1.2.1.43.11.1.1.6.1." + str(i)).value
             
             consumables_dict[key] = dict()
@@ -159,14 +159,21 @@ class SNMP():
 
 
 def determine_snmp_version(hostname):
-    """
+    """ Function to get the SNMP version through brute force.
+    
+    The function tries to get the printer's description using version 3. If it
+    fails, then try with version 2. If that fails, then try with version 1. Finally
+    if that fails, then the printer may be off or the system's firmware may be too
+    old to support SNMP.
+
     Args:
-        hostname (str): 
+        hostname (str): IPv4 address for the printer.
     
     Returns:
-        version/int: 
+        version (int): If positive, SNMP version of the printer. If negative, printer is off / unexpected error.
     """
     version = -1
+
     try:
         session = Session(hostname=hostname, community='public', version=3)
         description = session.get('.1.3.6.1.2.1.1.1.0')
@@ -183,27 +190,43 @@ def determine_snmp_version(hostname):
                         session = Session(hostname=hostname, community='public', version=1)
                         description = session.get('.1.3.6.1.2.1.1.1.0')
                         version = 1
-                    except SystemError:
-                        return -1
+                    except (SystemError, EasySNMPTimeoutError, EasySNMPConnectionError):
+                        version = -1
                 else:
-                    return -2
+                    version = -2
         else:
-            return -2
+            version = -2
     
     return version
 
 def determine_printer_model(hostname, version):
-    """
+    """ Get the printer's model name from the SNMP data.
+
+    The function tries to get the printer's model name through the SNMP data.
+    It can sometimes raise a SystemError exception but I have seen it be multiple
+      different errors so it returns -2 indicating that it is an unexpected error.
+    If the model name is actually a string of 'NOSUCHINSTANCE', that means that the
+      printer is too old and/or it needs a firmware update to have all the SNMP access.
+
     Args:
         hostname (str):
         version (int):
+    
+    Returns:
+        printer_model_name (str): A string with the printer's models name retrieved
+            from SNMP.
+        Negative int: -2 = unspecified error.
+                      -3 = SNMP data not given (printer/firmware too old).
     """
     session = Session(hostname=hostname, community='public', version=version)
+
     try:
         printer_model_name = session.get('.1.3.6.1.2.1.25.3.2.1.3.1').value
     except SystemError:
         return -2
 
+    # If the SNMP data gives 'NOSUCHINSTANCE' that means that the firmware of
+    #   the printer needs to be updated or the printer is too old.
     if str(printer_model_name) == "NOSUCHINSTANCE":
         return -3
     

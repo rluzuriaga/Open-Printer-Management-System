@@ -69,11 +69,14 @@ def update_database(printer_levels_dict):
                 ...
             }
     """
-
-    for key_top, value_dict in printer_levels_dict.items():
-        for key, value in value_dict.items():
+    for printer_name, module_level_dict in printer_levels_dict.items():
+        for module_name, level_value in module_level_dict.items():
             TonerLevel.objects.create(
-                printer_name=Printer.objects.get(printer_name=key_top),
-                module_identifier=key,
-                level=value
+
+                # This line needs to be this way instead of `printer_name = printer_name` because the
+                #   TonerLevel's printer_name field is a foreign key for the Printer model.
+                printer_name=Printer.objects.get(printer_name=printer_name),
+
+                module_identifier=module_name,
+                level=level_value
             )
