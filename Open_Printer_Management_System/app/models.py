@@ -54,6 +54,14 @@ class TonerLevel(models.Model):
     def __str__(self):
         return str(self.printer_name)
 
+class PrinterModel(models.Model):
+    model_name = models.CharField('Model Name', max_length=75, help_text='Model names for printers.')
+    module_numbers = models.IntegerField('Number of modules', default=1)
+
+    def __str__(self):
+        return str(self.model_name)
+
+
 def update_database(printer_levels_dict):
     """ Update the TonerLevel Table in the database with the information in the dictionary argument.
 
