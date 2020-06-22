@@ -67,15 +67,14 @@ def homepage(request):
                 messages.error(request,
                     'Printer not added. Make sure you have the correct IP address for the printer and the printer is on.'
                 )
-                return redirect('homepage')
             except PrinterNotAddedException:
                 messages.error(request, 'UNEXPECTED ERROR: Could not add printer.')
-                return redirect('homepage')
             except NoSNMPDataException:
                 messages.error(request, mark_safe(
                     "ERROR: Could not add printer. The printer doesn't have usable SNMP data.</br>"
                     "Printer may be too old or firmware may need to be updated."
                 ))
+            finally:
                 return redirect('homepage')
         else:
             # Need to check if the form submitted is add_printer_form.
