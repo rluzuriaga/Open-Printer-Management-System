@@ -6,8 +6,10 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 from .forms import AddPrinterForm, SiteToggles
-from .models import Printer, TonerLevel
+from .models import Printer, TonerLevel, PrinterModel
 from .snmp import determine_snmp_version, determine_printer_model
+
+import random
 
 def homepage(request):
     """
@@ -67,15 +69,14 @@ def homepage(request):
                 messages.error(request,
                     'Printer not added. Make sure you have the correct IP address for the printer and the printer is on.'
                 )
-                return redirect('homepage')
             except PrinterNotAddedException:
                 messages.error(request, 'UNEXPECTED ERROR: Could not add printer.')
-                return redirect('homepage')
             except NoSNMPDataException:
                 messages.error(request, mark_safe(
                     "ERROR: Could not add printer. The printer doesn't have usable SNMP data.</br>"
                     "Printer may be too old or firmware may need to be updated."
                 ))
+            finally:
                 return redirect('homepage')
         else:
             # Need to check if the form submitted is add_printer_form.
@@ -154,6 +155,7 @@ def add_printer_form_function(form):
     ip_address = form.cleaned_data['ip_address']
     department_name = form.cleaned_data['department_name']
 
+    """
     # Get the SNMP version through brout force
     # If the function returns -1 that means that either the IP address is wrong or 
     #   the printer is off and the exception is raised.
@@ -164,7 +166,19 @@ def add_printer_form_function(form):
         raise PrinterOffException
     elif version == -2:
         raise PrinterNotAddedException
+    """
+    # Check if the last set of IPv4 address is 100, 200, or something else.
+    # If it is 100, then raise the printer is off exception.
+    # If it is 200, then raise the printer not added exception
+    # If it is something else, just make a random SNMP version from 1-3.
+    if ip_address[-3:] == "100":
+        raise PrinterOffException
+    elif ip_address[-3:] == "200":
+        raise PrinterNotAddedException
+    else:
+        version = random.randint(1, 3)
 
+    """
     # Get the printer models through the SNMP data
     # If the function return is -2 then some unexpected error occurred and the exception is raised.
     # If the function return is -3 then that means that the printer doesn't have usable SNMP data
@@ -174,6 +188,22 @@ def add_printer_form_function(form):
         raise PrinterNotAddedException
     elif printer_model_name == -3:
         raise NoSNMPDataException
+    """
+    # Check if the last set of IPv4 address is 120, 130, or something else.
+    # If it is 120, then raise the printer not added exception.
+    # If it is 130, then raise the no SNMP data exception.
+    # If it is something else, then create an instance of the PrinterModel table, generate a random
+    #   number from the length of the PrinterModel(s), get the printer model name from that random
+    #   number that was generated.
+    if ip_address[-3:] == "120":
+        raise PrinterNotAddedException
+    elif ip_address[-3:] == "130":
+        raise NoSNMPDataException
+    else:
+        all_printer_models = PrinterModel.objects.all().values()
+        rand = random.randint(0, len(all_printer_models) - 1)
+        printer_model_name = all_printer_models[rand]["model_name"]
+        module_number = all_printer_models[rand]["module_numbers"]
 
     # If both the version and printer model didn't raise any exceptions, then the printer
     #   will be added to the database.
@@ -188,8 +218,7 @@ def add_printer_form_function(form):
 
     # Calls the 'updatetonerdata' management command to have toner data saved on the database
     #   for the printer that was just added.
-    extra_data = f'-n {printer_name} -i {ip_address}'
-    call_command('updatetonerdata', extra_data)
+    call_command('updatetonerdata', f'-n{printer_name}', f'-i{ip_address}', f'-m{module_number}')
 
 def toner_level_cleanup(all_toner_levels):
     """
