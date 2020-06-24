@@ -103,7 +103,7 @@ def homepage(request):
                 show_printer_model = True
 
     # Printer model objects.
-    all_departments = Printer.objects.filter().values('department_name').distinct()
+    all_departments = Printer.objects.filter().values('department_name').distinct().order_by('department_name')
     all_printer_objects = Printer.objects.all().order_by('department_name', 'printer_name')
 
     # time_threshold is the last 'x' minutes/hours set in settings.py.
