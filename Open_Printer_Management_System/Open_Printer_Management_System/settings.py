@@ -145,3 +145,4 @@ STATICFILES_DIRS = [
 ]
 
 TIMEDELTA = timedelta(minutes=10)
+TIMEDELTA_PLUS_ONE = timedelta(minutes=11)
