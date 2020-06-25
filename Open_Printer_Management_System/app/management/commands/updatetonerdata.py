@@ -1,7 +1,10 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
+from django.utils import timezone
 
 from app.snmp import SNMP
-from app.models import Printer, update_database
+from app.models import Printer, update_database, TonerLevel
+from app.views import toner_level_cleanup
 
 import random
 
@@ -45,11 +48,11 @@ class Command(BaseCommand):
         ip = options['ip']
         name = options['name']
         module_number = options['module_number']
-        
-        print(options)
 
         printer_levels_dict = dict()
 
+        # Only runs when a new printer is added.
+        # Create random percentage (from 30 to 100) for the printer.
         if ip is not None and name is not None and module_number is not None:
             rand1 = str(random.randint(30, 100))
             rand2 = str(random.randint(30, 100))
@@ -83,5 +86,35 @@ class Command(BaseCommand):
                     'Yellow': rand6
                 }
             
+            update_database(printer_levels_dict)
+            return
+
+        # Runs everytime that the toner data gets refreshed either manually or using cron.
+        else:
+            time_threshold = timezone.now() - settings.TIMEDELTA_PLUS_ONE
+            all_toner_levels = TonerLevel.objects.filter(date_time__gte=time_threshold).distinct().order_by('printer_name', 'module_identifier')
+
+            for toner in all_toner_levels:
+                printer_name = str(toner.printer_name)
+                module_id = str(toner.module_identifier)
+
+                level = int(toner.level)
+                if level == 0:
+                    new_level = random.randint(95, 100)
+                else:
+                    rand = random.randint(1, 3)
+                    new_level = level - rand
+                    if new_level < 0:
+                        new_level = 0
+                
+                new_level = str(new_level)
+
+                try:
+                    printer_levels_dict[printer_name].update({module_id: new_level})
+                except KeyError:
+                    printer_levels_dict[printer_name] = {module_id: new_level}
+            
+            TonerLevel.objects.filter(date_time__gte=time_threshold).distinct().order_by('printer_name', 'module_identifier').delete()
+
             update_database(printer_levels_dict)
             return
