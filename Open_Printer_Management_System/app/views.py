@@ -105,7 +105,7 @@ def homepage(request):
                 show_printer_model = True
 
     # Printer model objects.
-    all_departments = Printer.objects.filter().values('department_name').distinct()
+    all_departments = Printer.objects.filter().values('department_name').distinct().order_by('department_name')
     all_printer_objects = Printer.objects.all().order_by('department_name', 'printer_name')
 
     # time_threshold is the last 'x' minutes/hours set in settings.py.
@@ -195,7 +195,7 @@ def add_printer_form_function(form):
     # If it is something else, then create an instance of the PrinterModel table, generate a random
     #   number from the length of the PrinterModel(s), get the printer model name from that random
     #   number that was generated.
-    if ip_address[-3:] == "120":
+    if ip_address[-3:] == "200":
         raise PrinterNotAddedException
     elif ip_address[-3:] == "130":
         raise NoSNMPDataException
