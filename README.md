@@ -1,6 +1,6 @@
 # Open Printer Management System (OPMS)
 
-A Django project to easily view multiple printer toner data.
+A Django project to easily view and manage multiple printer toner data.
 
 ![Version badge](https://img.shields.io/badge/Version-1.0.0-green)
 
