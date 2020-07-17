@@ -7,6 +7,6 @@ A Django project to easily view and manage multiple printer toner data.
 
 ![OPMS Gif demo 1.0.0](https://raw.githubusercontent.com/rluzuriaga/Open-Printer-Management-System/master/Open_Printer_Management_System/static/gif/OPMS-1.0.0.gif)
 
-## ![Demo site click here](https://rodrigoluzuriaga.com/demo/opms/how-to)
+## <a href="https://rodrigoluzuriaga.com/demo/opms/how-to" rel="noopener noreferrer" target="_blank">View demo site</a>
 
 ## Installation instructions coming soon
