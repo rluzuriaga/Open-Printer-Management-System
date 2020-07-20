@@ -45,3 +45,6 @@ class SiteToggles(forms.Form):
             }
         )
     )
+
+class ModalDoneForm(forms.Form):
+    pass

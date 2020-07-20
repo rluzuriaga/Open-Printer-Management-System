@@ -6,13 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Open Printer Management System</title>
-
-    {% comment %} favicon {% endcomment %}
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/favicon/opms/apple-touch-icon.png' %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon/opms/favicon-32x32.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon/opms/favicon-16x16.png' %}">
-    <link rel="manifest" href="{% static 'images/favicon/opms/site.webmanifest' %}">
+    <title>DEMO - Open Printer Management System</title>
 
     <!-- Bootstrap core CSS -->
     <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
@@ -82,8 +76,8 @@
 
         </div>
       </form>
-    </div>   
-
+    </div>
+    
     <main role="main">
       {% block content %}
       {% endblock content %}
@@ -91,9 +85,6 @@
 
     <footer class="text-muted">
       <div class="container">
-        <p class="float-left">
-          <a href="{% url 'opms-homepage-demo-modal' %}">View how to use this demo</a>
-        </p>
         <p class="float-right">
           <a href="#">Back to top</a>
         </p>
@@ -109,5 +100,13 @@
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 
     {% include 'app/add_printer_modal.html' %}
+    {% include 'app/start_demo_modal.html' %}
+    <script>
+      $(window).on('load',function(){
+        $('#startDemoModal').modal('show');
+      });
+    </script>
   </body>
 </html>
+
+

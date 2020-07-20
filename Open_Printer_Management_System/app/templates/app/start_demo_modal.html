@@ -1,0 +1,58 @@
+{% block StartDemoModal %}
+
+<div class="modal fade" id="startDemoModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="startDemoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="startDemoModalLabel">How to use this demo site.</h2>
+        {% comment %} <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button> {% endcomment %}
+      </div>
+      <div class="modal-body">
+        <h4>How does this site work.</h4>
+        <p>Since this website is on a remote server, there aren't any physical printers on the network to use. So I made 
+        the demo site accept any IP address and randomly assign a model name and the number/type of toner data.
+        <br /><br />
+        Click on the <strong>Add Printer</strong> button to add as many fictitious printers as you'd like.
+        <br />
+        Clicking the <strong>Refresh Toner Data</strong> button subtracts 1-3% for each toner on every printer every time it is clicked.
+        <br />
+        Every hour, on the hour, the system resets to having no printers.</p>
+
+        <br />
+
+        <h4>How to produce errors.</h4>
+        <p>The project creates error messages when adding a printer that is off, has no usable SNMP data, or some other unexpected error.
+        <br />
+        To produce those error messages, I created a set of IP address octets that will always produce the errors.
+        All you need to do is change the last IPv4 address octet to one bellow.</p>
+
+        <span>
+            <strong>Printer is off: </strong> &nbsp&nbsp xxx.xxx.xxx.100
+            <br />
+            <strong>Unexpected error: </strong> &nbsp&nbsp xxx.xxx.xxx.200
+            <br />
+            <strong>No valid SNMP data / printer or firmware is too old: </strong> &nbsp&nbsp xxx.xxx.xxx.130
+            <br />
+            <strong>Examples: </strong> 10.15.155.100, 192.168.45.200
+        </span>
+
+        <br /><br />
+
+        <p>Note: This functionality is only for the demo site. Visit the 
+        <a href="https://github.com/rluzuriaga/Open-Printer-Management-System" rel="noopener noreferrer" target="_blank">project's GitHub</a> 
+        page to see how the system actually works in a production environment.</p>
+
+      </div>
+      <div class="modal-footer">
+        <form method="post" id="modal_done_form">
+          {% csrf_token %}
+          <button type="submit button" form="modal_done_form" name="modal_submit" class="btn btn-primary" value="Submit">I Understand</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock StartDemoModal %}
