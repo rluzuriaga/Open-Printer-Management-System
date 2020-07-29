@@ -244,7 +244,6 @@ class InstallCommand(install):
             except CalledProcessError:
                 try:
                     check_call("sudo service postgresql start".split())
-                    check_call("sudo service postgresql enable".split())
                 except CalledProcessError:
                     print(
                         "\n\nERROR: Could not start and enable PostgeSQL.\n"
@@ -263,7 +262,6 @@ class InstallCommand(install):
             except CalledProcessError:
                 try:
                     check_call("sudo service mysql start".split())
-                    check_call("sudo service mysql enable".split())
                 except CalledProcessError:
                     print(
                         "\n\nERROR: Could not start and enable MySQL.\n"
