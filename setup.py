@@ -9,7 +9,7 @@ from subprocess import check_call, CalledProcessError
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SETTINGS_FILE = BASE_DIR + '/Open_Printer_Management_System/Open_Printer_Management_System/settings.py'
-PYTHON_VENV_PATH = BASE_DIR + '/Open_Printer_Management_System/venv/bin/python'
+PYTHON_VENV_PATH = BASE_DIR + '/venv/bin/python'
 PYTHON_PATH = '/usr/bin/python3'
 
 PRECREATED_DATABASE = False
@@ -23,8 +23,8 @@ DATABASE_PORT = None
 TIMEZONE = None
 
 DEFAULT_TIMEDELTA = False
-TIMEDELTA_HOURS = None
-TIMEDELTA_MINUTES = None
+TIMEDELTA_HOURS = 0
+TIMEDELTA_MINUTES = 10
 
 class UserDefinedSettings:
     def __init__(self):
@@ -228,7 +228,7 @@ class InstallCommand(install):
     """Pre-installation for installation mode."""
     def run(self):
         check_call("sudo apt update".split())
-        check_call("sudo apt install libsnmp-dev snmp-mibs-downloader gcc nginx -y".split())
+        check_call("sudo apt install libsnmp-dev snmp-mibs-downloader python3-dev gcc nginx -y".split())
         check_call("pip3 install pytz".split())
 
         user_defined_settings = UserDefinedSettings()
@@ -280,7 +280,7 @@ class InstallCommand(install):
 
         # Post setup() commands
 
-        check_call(f"pip install {BASE_DIR}".split())
+        check_call(f"pip3 install -e {BASE_DIR}".split())
 
         # Create databases for PostgreSQL or MySQL !IF! that is what the user 
         if not PRECREATED_DATABASE:
