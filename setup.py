@@ -228,7 +228,7 @@ class InstallCommand(install):
     """Pre-installation for installation mode."""
     def run(self):
         check_call("sudo apt update".split())
-        check_call("sudo apt install libsnmp-dev snmp-mibs-downloader gcc nginx git -y".split())
+        check_call("sudo apt install libsnmp-dev snmp-mibs-downloader gcc nginx -y".split())
         check_call("pip3 install pytz".split())
 
         user_defined_settings = UserDefinedSettings()
