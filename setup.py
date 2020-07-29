@@ -388,7 +388,7 @@ class InstallCommand(install):
         
 
         # Activate crontab
-        check_call(f"crontab -e < {BASE_DIR}/crontab_updatetonerdata".split())        
+        check_call(f"crontab {BASE_DIR}/crontab_updatetonerdata".split())        
 
 setup(
     name='Open-Printer-Management-System',
