@@ -12,23 +12,10 @@ SETTINGS_FILE = BASE_DIR + '/Open_Printer_Management_System/Open_Printer_Managem
 PYTHON_VENV_PATH = BASE_DIR + '/venv/bin/python'
 PYTHON_PATH = '/usr/bin/python3'
 
-PRECREATED_DATABASE = False
-DATABASE_ENGINE = 'django.db.backends.sqlite3'
-DATABASE_NAME = None
-DATABASE_USERNAME = None
-DATABASE_PASSWORD = None
-DATABASE_HOST = None
-DATABASE_PORT = None
-
-TIMEZONE = None
-
-DEFAULT_TIMEDELTA = False
-TIMEDELTA_HOURS = 0
-TIMEDELTA_MINUTES = 10
-
 class UserDefinedSettings:
     def __init__(self):
         self.use_default_database = True
+        self.precreated_database = False
         self.database_engine = None
         self.database_name = None
         self.database_username = None
@@ -47,20 +34,6 @@ class UserDefinedSettings:
         self.get_timezone_data()
         self.get_timedelta_data()
 
-        # Added these here to make it not repeated
-        if not self.use_default_database:
-            DATABASE_ENGINE = self.database_engine
-            DATABASE_NAME = self.database_name
-            DATABASE_USERNAME = self.database_username
-            DATABASE_PASSWORD = self.database_password
-            DATABASE_HOST = self.database_host
-            DATABASE_PORT = self.database_port
-        
-        TIMEZONE = self.timezone
-
-        TIMEDELTA_HOURS = self.timedelta_hours
-        TIMEDELTA_MINUTES = self.timedelta_minutes
-
     def _user_entered_database_inputs(self):
         self.database_name = input("Please enter the database's name: ").strip()
         self.database_username = input("Please enter the username for the database: ").strip()
@@ -78,7 +51,7 @@ class UserDefinedSettings:
         input_use_default_database = input("Do you want to use the default database? [Y/n] ")
 
         if input_use_default_database.lower().strip() == 'y' or input_use_default_database.strip() == '':
-            print("\nThe default database will be used.")
+            print("\nThe default database will be used.\n")
             self.database_engine = 'django.db.backends.sqlite3'
         elif input_use_default_database.lower().strip() == 'n':
             self.use_default_database = False
@@ -107,7 +80,7 @@ class UserDefinedSettings:
                 if precreated_database.lower().strip() == 'y':
                     print("\nYou will be asked the database name, username with access to that database, host address, and port.")
                     self._user_entered_database_inputs()
-                    PRECREATED_DATABASE = True
+                    self.precreated_database = True
 
                 elif precreated_database.lower().strip() == 'n' or precreated_database.strip() == '':
                     print("\nThe database will be automatically created.")
@@ -134,6 +107,7 @@ class UserDefinedSettings:
                 )
 
                 self._user_entered_database_inputs()
+                self.precreated_database = True
                 
             else:
                 print("The input entered is not valid. Exiting.")
@@ -151,6 +125,7 @@ class UserDefinedSettings:
 
         if input_use_default_timezone.lower().strip() == 'y' or input_use_default_timezone.strip() == '':
             print("The default timezone will be used.")
+            self.use_default_timezone = True
         elif input_use_default_timezone.lower().strip() == 'n':
             self.use_default_timezone = False
         else:
@@ -180,7 +155,7 @@ class UserDefinedSettings:
 
         if input_use_default_timedelta.lower().strip() == 'y' or input_use_default_timedelta.strip() == '':
             print("The default time for updating the toner data will be used.")
-            DEFAULT_TIMEDELTA = True
+            self.use_default_timedelta = True
         elif input_use_default_timedelta.lower().strip() == 'n':
             self.use_default_timedelta = False
         else:
@@ -225,7 +200,6 @@ class UserDefinedSettings:
             self.timedelta_minutes = input_hours
 
 class InstallCommand(install):
-    """Pre-installation for installation mode."""
     def run(self):
         check_call("sudo apt update".split())
         check_call("sudo apt install libsnmp-dev snmp-mibs-downloader python3-dev gcc nginx -y".split())
@@ -283,20 +257,23 @@ class InstallCommand(install):
         check_call(f"pip3 install -e {BASE_DIR}".split())
 
         # Create databases for PostgreSQL or MySQL !IF! that is what the user 
-        if not PRECREATED_DATABASE:
-            if 'postgresql' in DATABASE_ENGINE:
-                print("Creating PostgreSQL Database")
-                check_call(["sudo", "-u", "postgres", "psql", "-c", f"CREATE DATABASE {DATABASE_NAME};"])
-                check_call(["sudo", "-u", "postgres", "psql", "-c", f"CREATE USER {DATABASE_USERNAME} WITH PASSWORD '{DATABASE_PASSWORD}';"])
-                check_call(["sudo", "-u", "postgres", "psql", "-c", f"ALTER ROLE {DATABASE_USERNAME} SET client_encoding TO 'utf8';"])
-                check_call(["sudo", "-u", "postgres", "psql", "-c", f"ALTER ROLE {DATABASE_USERNAME} SET default_transaction_isolation TO 'read committed';"])
-                check_call(["sudo", "-u", "postgres", "psql", "-c", f"ALTER ROLE {DATABASE_USERNAME} SET timezone TO '{TIMEZONE}';"])
-                check_call(["sudo", "-u", "postgres", "psql", "-c", f"GRANT ALL PRIVILEGES ON DATABASE {DATABASE_NAME} TO {DATABASE_USERNAME};"])
+        if not user_defined_settings.precreated_database:
+            if 'postgresql' in user_defined_settings.database_engine:
+                print(
+                    "\n\n------------------------------------------------------------------------------------------\n\n"
+                    "Creating PostgreSQL Database\n"
+                )
+                check_call(["sudo", "-u", "postgres", "psql", "-c", f"CREATE DATABASE {user_defined_settings.database_name};"])
+                check_call(["sudo", "-u", "postgres", "psql", "-c", f"CREATE USER {user_defined_settings.database_username} WITH PASSWORD '{user_defined_settings.database_password}';"])
+                check_call(["sudo", "-u", "postgres", "psql", "-c", f"ALTER ROLE {user_defined_settings.database_username} SET client_encoding TO 'utf8';"])
+                check_call(["sudo", "-u", "postgres", "psql", "-c", f"ALTER ROLE {user_defined_settings.database_username} SET default_transaction_isolation TO 'read committed';"])
+                check_call(["sudo", "-u", "postgres", "psql", "-c", f"ALTER ROLE {user_defined_settings.database_username} SET timezone TO '{user_defined_settings.timezone}';"])
+                check_call(["sudo", "-u", "postgres", "psql", "-c", f"GRANT ALL PRIVILEGES ON DATABASE {user_defined_settings.database_name} TO {user_defined_settings.database_username};"])
             
-            elif 'mysql' in DATABASE_ENGINE:
-                check_call(["sudo", "mysql", "-u", "root", "-Bse", f"CREATE DATABASE {DATABASE_NAME};"])
-                check_call(["sudo", "mysql", "-u", "root", "-Bse", f"CREATE USER '{DATABASE_USERNAME}'@'%' IDENTIFIED WITH mysql_native_password BY '{DATABASE_PASSWORD}';"])
-                check_call(["sudo", "mysql", "-u", "root", "-Bse", f"GRANT ALL ON {DATABASE_NAME}.* TO '{DATABASE_USERNAME}'@'%';"])
+            elif 'mysql' in user_defined_settings.database_engine:
+                check_call(["sudo", "mysql", "-u", "root", "-Bse", f"CREATE DATABASE {user_defined_settings.database_name};"])
+                check_call(["sudo", "mysql", "-u", "root", "-Bse", f"CREATE USER '{user_defined_settings.database_username}'@'%' IDENTIFIED WITH mysql_native_password BY '{user_defined_settings.database_password}';"])
+                check_call(["sudo", "mysql", "-u", "root", "-Bse", f"GRANT ALL ON {user_defined_settings.database_name}.* TO '{user_defined_settings.database_username}'@'%';"])
                 check_call(["sudo", "mysql", "-u", "root", "-Bse", "FLUSH PRIVILEGES;"])
         
         
@@ -313,12 +290,12 @@ class InstallCommand(install):
         database_info = \
             "DATABASES = {\n"\
             "    'default': {\n"\
-            f"        'ENGINE': '{DATABASE_ENGINE}',\n"\
-            f"        'NAME': '{DATABASE_NAME}',\n"\
-            f"        'USER': '{DATABASE_USERNAME}',\n"\
-            f"        'PASSWORD': '{DATABASE_PASSWORD}',\n"\
-            f"        'HOST': '{DATABASE_HOST}',\n"\
-            f"        'PORT': '{DATABASE_PORT}'\n"\
+            f"        'ENGINE': '{user_defined_settings.database_engine}',\n"\
+            f"        'NAME': '{user_defined_settings.database_name}',\n"\
+            f"        'USER': '{user_defined_settings.database_username}',\n"\
+            f"        'PASSWORD': '{user_defined_settings.database_password}',\n"\
+            f"        'HOST': '{user_defined_settings.database_host}',\n"\
+            f"        'PORT': '{user_defined_settings.database_port}'\n"\
             "    }\n"\
             "}\n"
 
@@ -332,14 +309,14 @@ class InstallCommand(install):
             for line in settings_lines:
                 # Change database info if not using the default database
                 if 'DATABASES = {' in line:
-                    if 'sqlite3' not in DATABASE_ENGINE:
+                    if 'sqlite3' not in user_defined_settings.database_engine:
                         f.write(database_info)
                         continue
                 
                 # Change timezone data if not using default
                 elif 'TIME_ZONE = ' in line: 
-                    if TIMEZONE != 'America/Los_Angeles':
-                        f.write(f"TIME_ZONE = '{TIMEZONE}'")
+                    if user_defined_settings.timezone != 'America/Los_Angeles':
+                        f.write(f"TIME_ZONE = '{user_defined_settings.timezone}'")
                         continue
                 
                 # Change the static files code to contain STATICFILES_DIRS instead of STATIC_ROOT
@@ -349,8 +326,8 @@ class InstallCommand(install):
                 
                 # Change the timedelta info if not using the default
                 elif 'TIMEDELTA = timedelta' in line:
-                    if not DEFAULT_TIMEDELTA:
-                        f.write(f"TIMEDELTA = timedelta(hours={int(TIMEDELTA_HOURS)}, minutes={int(TIMEDELTA_MINUTES)})")
+                    if not user_defined_settings.use_default_timedelta:
+                        f.write(f"TIMEDELTA = timedelta(hours={int(user_defined_settings.timedelta_hours)}, minutes={int(user_defined_settings.timedelta_minutes)})")
                         continue
                 
                 # If the line isn't one that needs to be changed then the line is just written to the file
@@ -361,15 +338,15 @@ class InstallCommand(install):
 
         # Create crontab file
         crontab_text = ""
-        if TIMEDELTA_MINUTES == 0:
+        if user_defined_settings.timedelta_minutes == 0:
             crontab_text += "0 "
         else:
-            crontab_text += f"*/{TIMEDELTA_MINUTES} "
+            crontab_text += f"*/{user_defined_settings.timedelta_minutes} "
         
-        if TIMEDELTA_HOURS == 0 or TIMEDELTA_HOURS == 1:
+        if user_defined_settings.timedelta_hours == 0 or user_defined_settings.timedelta_hours == 1:
             crontab_text += "* "
         else:
-            crontab_text += f"*/{TIMEDELTA_HOURS} "
+            crontab_text += f"*/{user_defined_settings.timedelta_hours} "
         
         crontab_text += f"* * * {BASE_DIR}/updatetonerdata.sh"
 
