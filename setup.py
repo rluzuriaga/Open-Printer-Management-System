@@ -6,8 +6,6 @@ import os
 import sys
 from subprocess import check_call, CalledProcessError
 
-import pytz
-
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SETTINGS_FILE = BASE_DIR + '/Open_Printer_Management_System/Open_Printer_Management_System/settings.py'
@@ -164,6 +162,7 @@ class UserDefinedSettings:
 
             input_timezone = input_timezone.replace("'", "").replace('"', '').replace('\n', '').strip()
 
+            import pytz
             if input_timezone not in pytz.all_timezones:
                 print("Invalid timezone. Exiting.")
                 sys.exit(1)
@@ -225,12 +224,7 @@ class UserDefinedSettings:
             self.timedelta_hours = input_hours
             self.timedelta_minutes = input_hours
 
-# class PreDevelopCommand(develop):
-#     """Pre-installation for development mode."""
-#     def run(self):
-#         develop.run(self)
-
-class PreInstallCommand(install):
+class InstallCommand(install):
     """Pre-installation for installation mode."""
     def run(self):
         check_call("sudo apt update".split())
@@ -280,12 +274,15 @@ class PreInstallCommand(install):
         elif 'oracle' in user_defined_settings.database_engine:
             check_call("pip3 install cx_Oracle".split())
 
-        install.run(self)
 
-class PostInstallCommand(install):
-    """Post-installation for installation mode."""
-    def run(self):
+        ####### Actually run the setup() at the bottom of this script
         install.run(self)
+        #######
+
+
+        # Post setup() commands
+
+        check_call(f"pip install {BASE_DIR}".split())
 
         # Create databases for PostgreSQL or MySQL !IF! that is what the user 
         if not PRECREATED_DATABASE:
@@ -393,7 +390,7 @@ class PostInstallCommand(install):
         
 
         # Activate crontab
-        check_call(f"crontab < {BASE_DIR}/crontab_updatetonerdata")
+        check_call(f"crontab < {BASE_DIR}/crontab_updatetonerdata".split())        
 
 setup(
     name='Open-Printer-Management-System',
@@ -413,8 +410,7 @@ setup(
         'gunicorn>=20.0,<21'
     ],
     cmdclass={
-        'install': PreInstallCommand,
-        'install': PostInstallCommand,
+        'install': InstallCommand,
     },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
