@@ -11,6 +11,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SETTINGS_FILE = BASE_DIR + '/Open_Printer_Management_System/Open_Printer_Management_System/settings.py'
 PYTHON_VENV_PATH = BASE_DIR + '/venv/bin/python'
 PYTHON_PATH = '/usr/bin/python3'
+USING_VENV = True
 
 class UserDefinedSettings:
     def __init__(self):
@@ -277,11 +278,13 @@ class InstallCommand(install):
                 check_call(["sudo", "mysql", "-u", "root", "-Bse", "FLUSH PRIVILEGES;"])
         
         
-        # Run the collect static command
+        # Run the collect static command and check if using venv or not
         try:
             check_call(f"{PYTHON_VENV_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py collectstatic".split())
+            USING_VENV = True
         except FileNotFoundError:
             check_call(f"{PYTHON_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py collectstatic".split())
+            USING_VENV = False
 
 
         # Edit settings.py file
@@ -369,7 +372,23 @@ class InstallCommand(install):
         
 
         # Activate crontab
-        check_call(f"crontab {BASE_DIR}/crontab_updatetonerdata".split())        
+        check_call(f"crontab {BASE_DIR}/crontab_updatetonerdata".split())
+
+
+        # Make Django database migrations
+        try:
+            check_call(f"{PYTHON_VENV_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py makemigrations".split())
+            check_call(f"{PYTHON_VENV_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py migrate".split())
+        except FileNotFoundError:
+            check_call(f"{PYTHON_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py makemigrations".split())
+            check_call(f"{PYTHON_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py migrate".split())
+
+
+        
+
+
+        # TODO: Write Nginx and Gunicorn service files and enable them
+
 
 setup(
     name='Open-Printer-Management-System',
