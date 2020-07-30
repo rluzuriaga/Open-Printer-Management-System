@@ -197,7 +197,7 @@ class UserDefinedSettings:
                 input_minutes = 5
 
             self.timedelta_hours = input_hours
-            self.timedelta_minutes = input_hours
+            self.timedelta_minutes = input_minutes
 
 class InstallCommand(install):
     def run(self):
@@ -318,6 +318,8 @@ class InstallCommand(install):
                     if user_defined_settings.timezone != 'America/Los_Angeles':
                         f.write(f"TIME_ZONE = '{user_defined_settings.timezone}'")
                         continue
+                    else:
+                        f.write(line)
                 
                 # Change the static files code to contain STATICFILES_DIRS instead of STATIC_ROOT
                 elif 'STATIC_ROOT = ' in line:
