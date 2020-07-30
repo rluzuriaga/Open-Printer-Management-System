@@ -384,7 +384,16 @@ class InstallCommand(install):
             check_call(f"{PYTHON_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py migrate".split())
 
 
+        # Create Gunicorn socket file
+        gunicorn_file_text = \
+            "[Unit]\n"\
+            "Description=gunicorn socket\n\n"\
+            "[Socket]\n"\
+            "ListenStream=/run/gunicorn.sock\n\n"\
+            "[Install]\n"\
+            "WantedBy=sockets.target\n"
         
+        check_call(f"sudo echo '{gunicorn_file_text}' > /etc/systemd/system/gunicorn.socket".split())
 
 
         # TODO: Write Nginx and Gunicorn service files and enable them
