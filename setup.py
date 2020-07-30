@@ -455,8 +455,8 @@ class InstallCommand(install):
             "        proxy_pass http://unix:/run/gunicorn.sock;\n"\
             "    }\n"\
             "}\n"
-        
-        check_call(f"sudo echo '{nginx_file_text}' > /etc/nginx/sites-available/Open-Printer-Management-System".split())
+
+        check_call(["sudo", "bash", "-c", f"echo '{nginx_file_text}' > /etc/nginx/sites-available/Open-Printer-Management-System"])
 
         # Enable Nginx site
         check_call("sudo ln -s /etc/nginx/sites-available/Open-Printer-Management-System /etc/nginx/sites-enabled".split())
@@ -466,7 +466,7 @@ class InstallCommand(install):
             check_call("sudo systemctl restart nginx".split())
         except CalledProcessError:
             check_call("sudo service nginx restart".split())
-        
+
 
         print(
             "\n\n\n\n\n------------------------------------------------------------------------------------------\n\n"
