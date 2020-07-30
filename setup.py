@@ -4,6 +4,7 @@ from setuptools.command.install import install
 
 import os
 import sys
+from getpass import getuser
 from subprocess import check_call, CalledProcessError
 
 
@@ -203,7 +204,7 @@ class UserDefinedSettings:
 class InstallCommand(install):
     def run(self):
         check_call("sudo apt update".split())
-        check_call("sudo apt install libsnmp-dev snmp-mibs-downloader python3-dev gcc nginx -y".split())
+        check_call("sudo apt install libsnmp-dev snmp-mibs-downloader python3-dev gcc nginx curl -y".split())
         check_call("pip3 install pytz".split())
 
         user_defined_settings = UserDefinedSettings()
@@ -385,7 +386,7 @@ class InstallCommand(install):
 
 
         # Create Gunicorn socket file
-        gunicorn_file_text = \
+        gunicorn_socket_file_text = \
             "[Unit]\n"\
             "Description=gunicorn socket\n\n"\
             "[Socket]\n"\
@@ -393,10 +394,52 @@ class InstallCommand(install):
             "[Install]\n"\
             "WantedBy=sockets.target\n"
         
-        check_call(f"sudo echo '{gunicorn_file_text}' > /etc/systemd/system/gunicorn.socket".split())
+        check_call(f"sudo echo '{gunicorn_socket_file_text}' > /etc/systemd/system/gunicorn.socket".split())
 
 
-        # TODO: Write Nginx and Gunicorn service files and enable them
+        # Create Gunicorn service file
+        ## Figure out location of gunicorn
+        if os.path.isfile(f"{BASE_DIR}/venv/bin/gunicorn"):
+            gunicorn_file_location = f"{BASE_DIR}/venv/bin/gunicorn"
+        else:
+            from subprocess import Popen, PIPE
+            gunicorn_file_location_byte = Popen("pip3 show gunicorn".split(), stdout=PIPE)
+            gunicorn_file_location_text = gunicorn_file_location_byte.stdout.read().decode('utf-8')
+
+            for line in gunicorn_file_location_text.split('\n'):
+                if 'Location: ' in line:
+                    gunicorn_file_location = line.replace('Location: ', '') + '/gunicorn'
+
+        # Make gunicorn file
+        gunicorn_service_file_text = \
+            "[Unit]\n"\
+            "Description=gunicorn daemon\n"\
+            "Requires=gunicorn.socket\n"\
+            "After=network.target\n\n"\
+            "[Service]\n"\
+            f"User={getuser()}\n"\
+            "Group=www-data\n"\
+            f"WorkingDirectory={BASE_DIR}/Open-Printer-Management-System\n"\
+            f"ExecStart={gunicorn_file_location} \\\n"\
+            "           --access-logfile - \\\n"\
+            "           --workers 3 \\\n"\
+            "           --bind unix:/run/gunicorn.sock \\\n"\
+            "           Open-Printer-Management-System.wsgi:application\n\n"\
+            "[Install]\n"\
+            "WantedBy=multi-user.target\n"
+
+        check_call(f"sudo echo '{gunicorn_service_file_text}' > /etc/systemd/system/gunicorn.service".split())
+
+        # Start and enable gunicorn socket
+        try:
+            check_call("sudo systemctl start gunicorn.socket".split())
+            check_call("sudo systemctl enable gunicorn.socket".split())
+        except CalledProcessError:
+            check_call("sudo service gunicorn.socket start".split())
+        
+        # Activate gunicorn
+        check_call("curl --unix-socket /run/gunicorn.sock localhost".split())
+
 
 
 setup(
