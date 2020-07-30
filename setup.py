@@ -428,7 +428,7 @@ class InstallCommand(install):
             "[Install]\n"\
             "WantedBy=multi-user.target\n"
 
-        check_call(f"sudo echo '{gunicorn_service_file_text}' > /etc/systemd/system/gunicorn.service".split())
+        check_call(["sudo", "bash", "-c", f"echo '{gunicorn_service_file_text}' > /etc/systemd/system/gunicorn.service"])
 
         # Start and enable gunicorn socket
         try:
