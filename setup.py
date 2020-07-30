@@ -394,7 +394,7 @@ class InstallCommand(install):
             "[Install]\n"\
             "WantedBy=sockets.target\n"
         
-        check_call(f"sudo echo '{gunicorn_socket_file_text}' > /etc/systemd/system/gunicorn.socket".split())
+        check_call(["sudo", "bash", "-c", f"echo '{gunicorn_socket_file_text}' > /etc/systemd/system/gunicorn.socket"])
 
 
         # Create Gunicorn service file
