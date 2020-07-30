@@ -350,7 +350,7 @@ class InstallCommand(install):
         else:
             crontab_text += f"*/{user_defined_settings.timedelta_hours} "
         
-        crontab_text += f"* * * {BASE_DIR}/updatetonerdata.sh"
+        crontab_text += f"* * * {BASE_DIR}/updatetonerdata.sh\n"
 
         with open(BASE_DIR + "/crontab_updatetonerdata", 'w') as f:
             f.write(crontab_text)
