@@ -441,6 +441,38 @@ class InstallCommand(install):
         check_call("curl --unix-socket /run/gunicorn.sock localhost".split())
 
 
+        # Create Nginx file
+        nginx_file_text = \
+            "server {\n"\
+            "    listen 80;\n"\
+            "    server_name 127.0.0.1;\n"\
+            "    location = /favicon.ico { access_log off; log_not_found off; }\n"\
+            "    location /static/ {\n"\
+            f"        root {BASE_DIR}/Open-Printer-Management-System;\n"\
+            "    }\n"\
+            "    location / {\n"\
+            "        include proxy_params;\n"\
+            "        proxy_pass http://unix:/run/gunicorn.sock;\n"\
+            "    }\n"\
+            "}\n"
+        
+        check_call(f"sudo echo '{nginx_file_text}' > /etc/nginx/sites-available/Open-Printer-Management-System".split())
+
+        # Enable Nginx site
+        check_call("sudo ln -s /etc/nginx/sites-available/Open-Printer-Management-System /etc/nginx/sites-enabled".split())
+
+        # Restart Nginx service
+        try:
+            check_call("sudo systemctl restart nginx".split())
+        except CalledProcessError:
+            check_call("sudo service nginx restart".split())
+        
+
+        print(
+            "\n\n\n\n\n------------------------------------------------------------------------------------------\n\n"
+            "Installation complete!\n"
+        )
+
 
 setup(
     name='Open-Printer-Management-System',
