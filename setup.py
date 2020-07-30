@@ -364,6 +364,8 @@ class InstallCommand(install):
             for line in update_toner_data_lines:
                 if 'PROJECT_PATH=' in line:
                     f.write(f"PROJECT_PATH={BASE_DIR}\n")
+                else:
+                    f.write(line)
         
 
         # Activate crontab
