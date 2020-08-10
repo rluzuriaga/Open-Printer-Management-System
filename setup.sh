@@ -229,7 +229,7 @@ current_directory=$PWD
 apt update
 apt install libsnmp-dev snmp-mibs-downloader python3-dev gcc nginx curl -y
 
-if [ $database_engine -eq "django.db.backends.postgresql" ]; then
+if [ "$database_engine" == "django.db.backends.postgresql" ]; then
 
     # Install, start, and enable PostgreSQL
     apt install postgresql postgresql-contrib -y
@@ -272,7 +272,7 @@ elif [ $database_engine -eq "django.db.backends.mysql" ]; then
 fi
 
 # Install setup.py
-$current_directory/venv/bin/python3 install $current_directory/setup.py
+$current_directory/venv/bin/python3 $current_directory/setup.py install
 
 # Django specific commands
 $current_directory/venv/bin/python3 $current_directory/Open_Printer_Management_System/manage.py collectstatic --noinput
@@ -289,13 +289,13 @@ sed -i -e "s~${original_static_data}~${new_static_data}~g" Open_Printer_Manageme
 
 # Create crontab file
 crontab_text=""
-if [ $timedelta_minutes -eq 0 -o $timedelta_minutes -eq "0" ]; then
+if [ $timedelta_minutes -eq 0 -o "$timedelta_minutes" == "0" ]; then
     crontab_text="${crontab_text}0 "
 else
     crontab_text="${crontab_text}*/${timedelta_minutes} "
 fi
 
-if [ $timedelta_hours -eq 0 -o $timedelta_hours -eq 1 -o $timedelta_hours -eq "0" -o $timedelta_hours -eq "1" ]; then
+if [ $timedelta_hours -eq 0 -o $timedelta_hours -eq 1 -o "$timedelta_hours" == "0" -o "$timedelta_hours" == "1" ]; then
     crontab_text="${crontab_text}* "
 else
     crontab_text="${crontab_text}*/${timedelta_hours} "
