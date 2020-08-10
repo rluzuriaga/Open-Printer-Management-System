@@ -229,7 +229,10 @@ current_directory=$PWD
 apt update
 apt install libsnmp-dev snmp-mibs-downloader python3-dev gcc nginx curl -y
 
-if [ "$database_engine" == "django.db.backends.postgresql" ]; then
+if [ $database_engine = "django.db.backends.postgresql" ]; then
+
+    # Install the PostgreSQL Python package
+    $current_directory/venv/bin/python3 -m pip install psycopg2-binary
 
     # Install, start, and enable PostgreSQL
     apt install postgresql postgresql-contrib -y
@@ -239,9 +242,6 @@ if [ "$database_engine" == "django.db.backends.postgresql" ]; then
         service postgresql start
     }
 
-    # Install the PostgreSQL Python package
-    $current_directory/venv/bin/python3 -m pip install psycopg2-binary
-
     # Create database and user
     sudo -u postgres psql -c "CREATE DATABASE $database_name;"
     sudo -u postgres psql -c "CREATE USER $database_username WITH PASSWORD '$database_password';"
@@ -250,7 +250,10 @@ if [ "$database_engine" == "django.db.backends.postgresql" ]; then
     sudo -u postgres psql -c "ALTER ROLE $database_username SET timezone TO '$timezone_data';"
     sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $database_name TO $database_username;"
     
-elif [ $database_engine -eq "django.db.backends.mysql" ]; then
+elif [ $database_engine = "django.db.backends.mysql" ]; then
+
+    # Install the MySQL package needed for Python
+    $current_directory/venv/bin/python3 -m pip install mysqlclient
 
     # Install, start, and enable MySQL
     apt install mysql-server libmysqlclient-dev default-libmysqlclient-dev -y
@@ -259,9 +262,6 @@ elif [ $database_engine -eq "django.db.backends.mysql" ]; then
     } || {
         service mysql start
     }
-
-    # Install the MySQL package needed for Python
-    $current_directory/venv/bin/python3 -m pip install mysqlclient
 
     # Create database and user
     sudo mysql -u root -Bse "CREATE DATABASE $database_name;"
@@ -289,13 +289,13 @@ sed -i -e "s~${original_static_data}~${new_static_data}~g" Open_Printer_Manageme
 
 # Create crontab file
 crontab_text=""
-if [ $timedelta_minutes -eq 0 -o "$timedelta_minutes" == "0" ]; then
+if [ $timedelta_minutes -eq 0 -o $timedelta_minutes = "0" ]; then
     crontab_text="${crontab_text}0 "
 else
     crontab_text="${crontab_text}*/${timedelta_minutes} "
 fi
 
-if [ $timedelta_hours -eq 0 -o $timedelta_hours -eq 1 -o "$timedelta_hours" == "0" -o "$timedelta_hours" == "1" ]; then
+if [ $timedelta_hours -eq 0 -o $timedelta_hours -eq 1 -o $timedelta_hours = "0" -o $timedelta_hours = "1" ]; then
     crontab_text="${crontab_text}* "
 else
     crontab_text="${crontab_text}*/${timedelta_hours} "
