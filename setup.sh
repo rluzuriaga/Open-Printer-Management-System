@@ -326,7 +326,11 @@ After=network.target
 User=$SUDO_USER
 Group=www-data
 WorkingDirectory=$current_directory/Open-Printer-Management-System
-ExecStart=$current_directory/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock Open-Printer-Management-System.wsgi:application
+ExecStart=$current_directory/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/gunicorn.sock \
+          Open-Printer-Management-System.wsgi:application
 
 [Install]
 WantedBy=multi-user.target
@@ -334,11 +338,7 @@ WantedBy=multi-user.target
 echo "${gunicorn_service_file_text}" > /etc/systemd/system/gunicorn.service
 
 # Start and enable gunicorn socket
-{
-    systemctl start gunicorn.socket && systemctl enable gunicorn.socket
-} || {
-    service gunicorn.socket start
-}
+systemctl start gunicorn.socket && systemctl enable gunicorn.socket || service gunicorn.socket start
 
 # Activate gunicorn
 curl --unix-socket /run/gunicorn.sock localhost
