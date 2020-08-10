@@ -218,7 +218,13 @@ fi
 current_directory=$PWD
 
 # Create Python3 virtual environment
-python3 -m venv $current_directory/venv
+{
+    python3 -m venv $current_directory/venv
+} || {
+    apt install python3-venv -y
+    python3 -m venv $current_directory/venv
+}
+
 
 apt update
 apt install libsnmp-dev snmp-mibs-downloader python3-dev gcc nginx curl -y
