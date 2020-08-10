@@ -236,11 +236,7 @@ if [ $database_engine = "django.db.backends.postgresql" ]; then
 
     # Install, start, and enable PostgreSQL
     apt install postgresql postgresql-contrib -y
-    {
-        systemctl start postgresql && systemctl enable postgresql
-    } || {
-        service postgresql start
-    }
+    systemctl start postgresql && systemctl enable postgresql || service postgresql start
 
     # Create database and user
     sudo -u postgres psql -c "CREATE DATABASE $database_name;"
@@ -257,11 +253,7 @@ elif [ $database_engine = "django.db.backends.mysql" ]; then
 
     # Install, start, and enable MySQL
     apt install mysql-server libmysqlclient-dev default-libmysqlclient-dev -y
-    {
-        systemctl start mysql && systemctl enable mysql
-    } || {
-        service mysql start
-    }
+    systemctl start mysql && systemctl enable mysql || service mysql start
 
     # Create database and user
     sudo mysql -u root -Bse "CREATE DATABASE $database_name;"
@@ -372,11 +364,7 @@ echo "${nginx_file_text}" > /etc/nginx/sites-available/Open-Printer-Management-S
 ln -s /etc/nginx/sites-available/Open-Printer-Management-System /etc/nginx/sites-enabled
 
 # Restart Nginx service
-{
-    systemctl restart nginx
-} || {
-    service nginx restart
-}
+systemctl restart nginx || service nginx restart
 
 # Tell the user the installation has completed
 echo "\n\n\n\n\n------------------------------------------------------------------------------------------\n"
