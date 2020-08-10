@@ -283,13 +283,13 @@ sed -i -e "s~${original_static_data}~${new_static_data}~g" Open_Printer_Manageme
 
 # Create crontab file
 crontab_text=""
-if [ $timedelta_minutes -eq 0 ]; then
+if [ $timedelta_minutes -eq 0 -o $timedelta_minutes -eq "0" ]; then
     crontab_text="${crontab_text}0 "
 else
     crontab_text="${crontab_text}*/${timedelta_minutes} "
 fi
 
-if [ $timedelta_hours -eq 0 -o $timedelta_hours -eq 1 ]; then
+if [ $timedelta_hours -eq 0 -o $timedelta_hours -eq 1 -o $timedelta_hours -eq "0" -o $timedelta_hours -eq "1" ]; then
     crontab_text="${crontab_text}* "
 else
     crontab_text="${crontab_text}*/${timedelta_hours} "
@@ -298,3 +298,80 @@ fi
 crontab_text="${crontab_text}* * * ${current_directory}/updatetonerdata.sh"
 
 echo "${crontab_text}" > $current_directory/crontab_updatetonerdata
+
+# Activate crontab
+crontab -u $SUDO_USER $current_directory/crontab_updatetonerdata
+
+# Create Gunicorn socket file
+gunicorn_socket_file_text=\
+"[Unit]
+Description=gunicorn socket
+
+[Socket]
+ListenStream=/run/gunicorn.sock
+
+[Install]
+WantedBy=sockets.target
+"
+
+echo "${gunicorn_socket_file_text}" > /etc/systemd/system/gunicorn.socket
+
+
+# Create Gunicorn service file
+gunicorn_service_file_text=\
+"[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User=$SUDO_USER
+Group=www-data
+WorkingDirectory=$current_directory/Open-Printer-Management-System
+ExecStart=$current_directory/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock Open-Printer-Management-System.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+"
+echo "${gunicorn_service_file_text}" > /etc/systemd/system/gunicorn.service
+
+# Start and enable gunicorn socket
+{
+    systemctl start gunicorn.socket && systemctl enable gunicorn.socket
+} || {
+    service gunicorn.socket start
+}
+
+# Activate gunicorn
+curl --unix-socket /run/gunicorn.sock localhost
+
+# Create Nginx file
+nginx_file_text=\
+"server {
+    listen 80;
+    server_name 127.0.0.1;
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root $current_directory/Open-Printer-Management-System;
+    }
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn.sock;
+    }
+}
+"
+echo "${nginx_file_text}" > /etc/nginx/sites-available/Open-Printer-Management-System
+
+# Enable Nginx site
+ln -s /etc/nginx/sites-available/Open-Printer-Management-System /etc/nginx/sites-enabled
+
+# Restart Nginx service
+{
+    systemctl restart nginx
+} || {
+    service nginx restart
+}
+
+# Tell the user the installation has completed
+echo "\n\n\n\n\n------------------------------------------------------------------------------------------\n"
+echo "Installation complete!\n"
