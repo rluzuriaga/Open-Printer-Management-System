@@ -48,7 +48,7 @@ get_database_data() {
 replace_database_info_on_settings() {
     original_database_data="DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),}}"
     
-    new_database_data="DATABASES = {\n    'default': {\n        'ENGINE': '$database_engine',\n        'NAME': '$database_name',\n        'USER': '$database_username',\n        'PASSWORD': '$database_password',\n        'HOST': '$database_port',\n        'PORT': '$database_port'\n    }\n}"
+    new_database_data="DATABASES = {\n    'default': {\n        'ENGINE': '$database_engine',\n        'NAME': '$database_name',\n        'USER': '$database_username',\n        'PASSWORD': '$database_password',\n        'HOST': '$database_host',\n        'PORT': '$database_port'\n    }\n}"
 
     sed -i -e "s/${original_database_data}*/${new_database_data}/g" Open_Printer_Management_System/Open_Printer_Management_System/settings.py
 }
