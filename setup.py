@@ -14,464 +14,460 @@ PYTHON_VENV_PATH = BASE_DIR + '/venv/bin/python'
 PYTHON_PATH = '/usr/bin/python3'
 USING_VENV = True
 
-class UserDefinedSettings:
-    def __init__(self):
-        self.use_default_database = True
-        self.precreated_database = False
-        self.database_engine = None
-        self.database_name = None
-        self.database_username = None
-        self.database_password = None
-        self.database_host = None
-        self.database_port = None
+# class UserDefinedSettings:
+#     def __init__(self):
+#         self.use_default_database = True
+#         self.precreated_database = False
+#         self.database_engine = None
+#         self.database_name = None
+#         self.database_username = None
+#         self.database_password = None
+#         self.database_host = None
+#         self.database_port = None
 
-        self.use_default_timezone = True
-        self.timezone = 'America/Los_Angeles'
+#         self.use_default_timezone = True
+#         self.timezone = 'America/Los_Angeles'
 
-        self.use_default_timedelta = True
-        self.timedelta_hours = 0
-        self.timedelta_minutes = 10
+#         self.use_default_timedelta = True
+#         self.timedelta_hours = 0
+#         self.timedelta_minutes = 10
 
-        self.get_database_data()
-        self.get_timezone_data()
-        self.get_timedelta_data()
+#         self.get_database_data()
+#         self.get_timezone_data()
+#         self.get_timedelta_data()
 
-    def _user_entered_database_inputs(self):
-        self.database_name = input("Please enter the database's name: ").strip()
-        self.database_username = input("Please enter the username for the database: ").strip()
-        self.database_password = input("Please enter the password for that user: ").strip()
-        self.database_host = input("Please enter the host for the database: ").strip()
-        self.database_port = input("Please enter the database port: ").strip()
+#     def _user_entered_database_inputs(self):
+#         self.database_name = input("Please enter the database's name: ").strip()
+#         self.database_username = input("Please enter the username for the database: ").strip()
+#         self.database_password = input("Please enter the password for that user: ").strip()
+#         self.database_host = input("Please enter the host for the database: ").strip()
+#         self.database_port = input("Please enter the database port: ").strip()
 
-    def get_database_data(self):
-        print(
-            "\n\n\n\n------------------------------------------------------------------------------------------\n\n"
-            "What database engine would you like to use?\n"
-            "    The default database is SQLite.\n"
-        )
+#     def get_database_data(self):
+#         print(
+#             "\n\n\n\n------------------------------------------------------------------------------------------\n\n"
+#             "What database engine would you like to use?\n"
+#             "    The default database is SQLite.\n"
+#         )
 
-        input_use_default_database = input("Do you want to use the default database? [Y/n] ")
+#         input_use_default_database = input("Do you want to use the default database? [Y/n] ")
 
-        if input_use_default_database.lower().strip() == 'y' or input_use_default_database.strip() == '':
-            print("\nThe default database will be used.\n")
-            self.database_engine = 'django.db.backends.sqlite3'
-        elif input_use_default_database.lower().strip() == 'n':
-            self.use_default_database = False
-        else:
-            print("The input entered is not valid. Exiting.")
-            sys.exit(1)
+#         if input_use_default_database.lower().strip() == 'y' or input_use_default_database.strip() == '':
+#             print("\nThe default database will be used.\n")
+#             self.database_engine = 'django.db.backends.sqlite3'
+#         elif input_use_default_database.lower().strip() == 'n':
+#             self.use_default_database = False
+#         else:
+#             print("The input entered is not valid. Exiting.")
+#             sys.exit(1)
         
-        if not self.use_default_database:
-            print(
-                "\n\n  1. PostgreSQL\n"
-                "  2. MySQL\n"
-                "  3. Oracle (You will need to setup the database yourself)\n"
-            )
+#         if not self.use_default_database:
+#             print(
+#                 "\n\n  1. PostgreSQL\n"
+#                 "  2. MySQL\n"
+#                 "  3. Oracle (You will need to setup the database yourself)\n"
+#             )
 
-            input_database_selection = input("Please enter the number next to the database you would like to use: ")
+#             input_database_selection = input("Please enter the number next to the database you would like to use: ")
 
-            try:
-                input_database_selection = int(input_database_selection)
-            except ValueError:
-                print("The input is not a number. Exiting.")
-                sys.exit(1)
+#             try:
+#                 input_database_selection = int(input_database_selection)
+#             except ValueError:
+#                 print("The input is not a number. Exiting.")
+#                 sys.exit(1)
             
-            if input_database_selection == 1 or input_database_selection == 2:
-                precreated_database = input("Do you have a database already created? [y/N] ")
+#             if input_database_selection == 1 or input_database_selection == 2:
+#                 precreated_database = input("Do you have a database already created? [y/N] ")
 
-                if precreated_database.lower().strip() == 'y':
-                    print("\nYou will be asked the database name, username with access to that database, host address, and port.")
-                    self._user_entered_database_inputs()
-                    self.precreated_database = True
+#                 if precreated_database.lower().strip() == 'y':
+#                     print("\nYou will be asked the database name, username with access to that database, host address, and port.")
+#                     self._user_entered_database_inputs()
+#                     self.precreated_database = True
 
-                elif precreated_database.lower().strip() == 'n' or precreated_database.strip() == '':
-                    print("\nThe database will be automatically created.")
+#                 elif precreated_database.lower().strip() == 'n' or precreated_database.strip() == '':
+#                     print("\nThe database will be automatically created.")
 
-                    if input_database_selection == 1:
-                        self.database_engine = 'django.db.backends.postgresql'
-                        self.database_port = '5432'
-                    elif input_database_selection == 2:
-                        self.database_engine = 'django.db.backends.mysql'
-                        self.database_port = '3306'
+#                     if input_database_selection == 1:
+#                         self.database_engine = 'django.db.backends.postgresql'
+#                         self.database_port = '5432'
+#                     elif input_database_selection == 2:
+#                         self.database_engine = 'django.db.backends.mysql'
+#                         self.database_port = '3306'
                     
-                    self.database_name = 'open_printer_management_system'
-                    self.database_username = 'open_printer_management_system_user'
-                    self.database_password = '!Open_Printer_Management_System_P@ssword!'
-                    self.database_host = '127.0.0.1'
-                else:
-                    print("The input entered is not valid. Exiting.")
-                    sys.exit(1)
-            elif input_database_selection == 3:
-                print(
-                    "Make sure you already have your Oracle SQL database setup.\n"
-                    "If you don't have this setup, you can use 'Ctrl + C' to exit the program and setup your database.\n"
-                    "You will be asked the database name, username with access to that database, host address, and port.\n\n"
-                )
+#                     self.database_name = 'open_printer_management_system'
+#                     self.database_username = 'open_printer_management_system_user'
+#                     self.database_password = '!Open_Printer_Management_System_P@ssword!'
+#                     self.database_host = '127.0.0.1'
+#                 else:
+#                     print("The input entered is not valid. Exiting.")
+#                     sys.exit(1)
+#             elif input_database_selection == 3:
+#                 print(
+#                     "Make sure you already have your Oracle SQL database setup.\n"
+#                     "If you don't have this setup, you can use 'Ctrl + C' to exit the program and setup your database.\n"
+#                     "You will be asked the database name, username with access to that database, host address, and port.\n\n"
+#                 )
 
-                self._user_entered_database_inputs()
-                self.precreated_database = True
+#                 self._user_entered_database_inputs()
+#                 self.precreated_database = True
                 
-            else:
-                print("The input entered is not valid. Exiting.")
-                sys.exit(1)
+#             else:
+#                 print("The input entered is not valid. Exiting.")
+#                 sys.exit(1)
 
-    def get_timezone_data(self):
-        print(
-            "\n\n------------------------------------------------------------------------------------------\n\n"
-            "The system needs a timezone.\n"
-            "    The default is 'America/Los_Angeles'.\n"
-            "    If you are going to use a different timezone, please use the 'TZ database name' column from 'https://en.wikipedia.org/wiki/List_of_tz_database_time_zones' for your timezone.\n"
-        )
+#     def get_timezone_data(self):
+#         print(
+#             "\n\n------------------------------------------------------------------------------------------\n\n"
+#             "The system needs a timezone.\n"
+#             "    The default is 'America/Los_Angeles'.\n"
+#             "    If you are going to use a different timezone, please use the 'TZ database name' column from 'https://en.wikipedia.org/wiki/List_of_tz_database_time_zones' for your timezone.\n"
+#         )
 
-        input_use_default_timezone = input("Do you want to use the default timezone? [Y/n] ")
+#         input_use_default_timezone = input("Do you want to use the default timezone? [Y/n] ")
 
-        if input_use_default_timezone.lower().strip() == 'y' or input_use_default_timezone.strip() == '':
-            print("The default timezone will be used.")
-            self.use_default_timezone = True
-        elif input_use_default_timezone.lower().strip() == 'n':
-            self.use_default_timezone = False
-        else:
-            print("The input entered is not valid. Exiting.")
-            sys.exit(1)
+#         if input_use_default_timezone.lower().strip() == 'y' or input_use_default_timezone.strip() == '':
+#             print("The default timezone will be used.")
+#             self.use_default_timezone = True
+#         elif input_use_default_timezone.lower().strip() == 'n':
+#             self.use_default_timezone = False
+#         else:
+#             print("The input entered is not valid. Exiting.")
+#             sys.exit(1)
 
-        if not self.use_default_timezone:
-            input_timezone = input("Please enter your timezone: ")
+#         if not self.use_default_timezone:
+#             input_timezone = input("Please enter your timezone: ")
 
-            input_timezone = input_timezone.replace("'", "").replace('"', '').replace('\n', '').strip()
+#             input_timezone = input_timezone.replace("'", "").replace('"', '').replace('\n', '').strip()
 
-            import pytz
-            if input_timezone not in pytz.all_timezones:
-                print("Invalid timezone. Exiting.")
-                sys.exit(1)
-            else:
-                self.timezone = input_timezone
+#             import pytz
+#             if input_timezone not in pytz.all_timezones:
+#                 print("Invalid timezone. Exiting.")
+#                 sys.exit(1)
+#             else:
+#                 self.timezone = input_timezone
 
-    def get_timedelta_data(self):
-        print(
-            "\n\n------------------------------------------------------------------------------------------\n\n"
-            "How often would you want the system to update the printer's toner data in the background?\n"
-            "    The default is to update the toner data every 10 minutes.\n"
-        )
+#     def get_timedelta_data(self):
+#         print(
+#             "\n\n------------------------------------------------------------------------------------------\n\n"
+#             "How often would you want the system to update the printer's toner data in the background?\n"
+#             "    The default is to update the toner data every 10 minutes.\n"
+#         )
 
-        input_use_default_timedelta = input("Do you want to use the default time? [Y/n] ")
+#         input_use_default_timedelta = input("Do you want to use the default time? [Y/n] ")
 
-        if input_use_default_timedelta.lower().strip() == 'y' or input_use_default_timedelta.strip() == '':
-            print("The default time for updating the toner data will be used.")
-            self.use_default_timedelta = True
-        elif input_use_default_timedelta.lower().strip() == 'n':
-            self.use_default_timedelta = False
-        else:
-            print("The input entered is not valid. Exiting.")
-            sys.exit(1)
+#         if input_use_default_timedelta.lower().strip() == 'y' or input_use_default_timedelta.strip() == '':
+#             print("The default time for updating the toner data will be used.")
+#             self.use_default_timedelta = True
+#         elif input_use_default_timedelta.lower().strip() == 'n':
+#             self.use_default_timedelta = False
+#         else:
+#             print("The input entered is not valid. Exiting.")
+#             sys.exit(1)
 
-        if not self.use_default_timedelta:
-            print(
-                "Please enter a number next to 'Hours: ' and/or 'Minutes: '\n"
-                "    Examples:\n"
-                "            Hours:   1                OR                Hours:   0\n"
-                "            Minutes: 0                OR                Minutes: 30\n"
-                "      Every hour on the hour                Every 30th minute (1:00, 1:30, 2:00...)\n\n"
+#         if not self.use_default_timedelta:
+#             print(
+#                 "Please enter a number next to 'Hours: ' and/or 'Minutes: '\n"
+#                 "    Examples:\n"
+#                 "            Hours:   1                OR                Hours:   0\n"
+#                 "            Minutes: 0                OR                Minutes: 30\n"
+#                 "      Every hour on the hour                Every 30th minute (1:00, 1:30, 2:00...)\n\n"
 
-                "    Please note that if entering a minute value that isn't equally divisible by 60 and/or an hour value that isn't equally divisible by 24, the toner update job will also be ran at the 0th minute (every hour on the hour) and/or at midnight respectively.\n"
-                "    Examples: \n"
-                "           Every 18 minutes (1:00, 1:18, 1:36, 1:54, 2:00...)        OR     Every 45 minutes (1:00, 1:45, 2:00, 2:45...)\n"
-                "           Every 7 hours (00:00, 7:00, 14:00, 21:00, 00:00...)       OR     Every 15 hours (00:00, 15:00, 00:00, 15:00 ...)\n"
-                "           Every 7 hours and 18 minutes (21:00, 21:18, 21:36, 21:54, 00:00, 00:18 ... 7:00, 7:18 ... 14:00, 14:18 ...)\n\n"
-            )
+#                 "    Please note that if entering a minute value that isn't equally divisible by 60 and/or an hour value that isn't equally divisible by 24, the toner update job will also be ran at the 0th minute (every hour on the hour) and/or at midnight respectively.\n"
+#                 "    Examples: \n"
+#                 "           Every 18 minutes (1:00, 1:18, 1:36, 1:54, 2:00...)        OR     Every 45 minutes (1:00, 1:45, 2:00, 2:45...)\n"
+#                 "           Every 7 hours (00:00, 7:00, 14:00, 21:00, 00:00...)       OR     Every 15 hours (00:00, 15:00, 00:00, 15:00 ...)\n"
+#                 "           Every 7 hours and 18 minutes (21:00, 21:18, 21:36, 21:54, 00:00, 00:18 ... 7:00, 7:18 ... 14:00, 14:18 ...)\n\n"
+#             )
 
-            input_hours = input("Hours:   ")
-            input_minutes = input("Minutes: ")
+#             input_hours = input("Hours:   ")
+#             input_minutes = input("Minutes: ")
 
-            try:
-                input_hours = int(input_hours)
-                input_minutes = int(input_minutes)
-            except ValueError:
-                print("One or more entered inputs were not numbers. Exiting.")
-                sys.exit(1)
+#             try:
+#                 input_hours = int(input_hours)
+#                 input_minutes = int(input_minutes)
+#             except ValueError:
+#                 print("One or more entered inputs were not numbers. Exiting.")
+#                 sys.exit(1)
             
-            if input_hours < 0 or input_minutes < 0:
-                print("One or more entered inputs were not positive numbers. Exiting.")
-                sys.exit(1)
+#             if input_hours < 0 or input_minutes < 0:
+#                 print("One or more entered inputs were not positive numbers. Exiting.")
+#                 sys.exit(1)
             
-            if input_hours == 0 and input_minutes < 5:
-                print("The minimum time value is every 5 minutes. Setting the update toner time to every 5 minutes.")
-                input_hours = 0
-                input_minutes = 5
+#             if input_hours == 0 and input_minutes < 5:
+#                 print("The minimum time value is every 5 minutes. Setting the update toner time to every 5 minutes.")
+#                 input_hours = 0
+#                 input_minutes = 5
 
-            self.timedelta_hours = input_hours
-            self.timedelta_minutes = input_minutes
+#             self.timedelta_hours = input_hours
+#             self.timedelta_minutes = input_minutes
 
-class InstallCommand(install):
-    def run(self):
-        check_call("sudo apt update".split())
-        check_call("sudo apt install libsnmp-dev snmp-mibs-downloader python3-dev gcc nginx curl -y".split())
-        check_call("pip3 install pytz".split())
+# class InstallCommand(install):
+#     def run(self):
+#         check_call("sudo apt update".split())
+#         check_call("sudo apt install libsnmp-dev snmp-mibs-downloader python3-dev gcc nginx curl -y".split())
+#         check_call("pip3 install pytz".split())
 
-        user_defined_settings = UserDefinedSettings()
+#         user_defined_settings = UserDefinedSettings()
 
-        if 'postgresql' in user_defined_settings.database_engine:
-            check_call("sudo apt install postgresql postgresql-contrib -y".split())
-            check_call("pip3 install psycopg2-binary".split())
+#         if 'postgresql' in user_defined_settings.database_engine:
+#             check_call("sudo apt install postgresql postgresql-contrib -y".split())
+#             check_call("pip3 install psycopg2-binary".split())
 
-            # Start and enable PostgreSQL
-            try:
-                check_call("sudo systemctl start postgresql".split())
-                check_call("sudo systemctl enable postgresql".split())
-            except CalledProcessError:
-                try:
-                    check_call("sudo service postgresql start".split())
-                except CalledProcessError:
-                    print(
-                        "\n\nERROR: Could not start and enable PostgeSQL.\n"
-                        "Please use the command 'sudo systemctl start postgresql && sudo systemctl enable postgresql', then run the install command again. Exiting."
-                    )
-                    sys.exit(1)
+#             # Start and enable PostgreSQL
+#             try:
+#                 check_call("sudo systemctl start postgresql".split())
+#                 check_call("sudo systemctl enable postgresql".split())
+#             except CalledProcessError:
+#                 try:
+#                     check_call("sudo service postgresql start".split())
+#                 except CalledProcessError:
+#                     print(
+#                         "\n\nERROR: Could not start and enable PostgeSQL.\n"
+#                         "Please use the command 'sudo systemctl start postgresql && sudo systemctl enable postgresql', then run the install command again. Exiting."
+#                     )
+#                     sys.exit(1)
 
-        elif 'mysql' in user_defined_settings.database_engine:
-            check_call("sudo apt install mysql-server libmysqlclient-dev default-libmysqlclient-dev -y".split())
-            check_call("pip3 install mysqlclient".split())
+#         elif 'mysql' in user_defined_settings.database_engine:
+#             check_call("sudo apt install mysql-server libmysqlclient-dev default-libmysqlclient-dev -y".split())
+#             check_call("pip3 install mysqlclient".split())
 
-            # Start and enable MySQL
-            try:
-                check_call("sudo systemctl start mysql".split())
-                check_call("sudo systemctl enable mysql".split())
-            except CalledProcessError:
-                try:
-                    check_call("sudo service mysql start".split())
-                except CalledProcessError:
-                    print(
-                        "\n\nERROR: Could not start and enable MySQL.\n"
-                        "Please use the command 'sudo systemctl start mysql && sudo systemctl enable mysql', then run the install command again. Exiting."
-                    )
-                    sys.exit(1)
+#             # Start and enable MySQL
+#             try:
+#                 check_call("sudo systemctl start mysql".split())
+#                 check_call("sudo systemctl enable mysql".split())
+#             except CalledProcessError:
+#                 try:
+#                     check_call("sudo service mysql start".split())
+#                 except CalledProcessError:
+#                     print(
+#                         "\n\nERROR: Could not start and enable MySQL.\n"
+#                         "Please use the command 'sudo systemctl start mysql && sudo systemctl enable mysql', then run the install command again. Exiting."
+#                     )
+#                     sys.exit(1)
         
-        elif 'oracle' in user_defined_settings.database_engine:
-            check_call("pip3 install cx_Oracle".split())
+#         elif 'oracle' in user_defined_settings.database_engine:
+#             check_call("pip3 install cx_Oracle".split())
 
 
-        ####### Actually run the setup() at the bottom of this script
-        install.run(self)
-        #######
+#         ####### Actually run the setup() at the bottom of this script
+#         install.run(self)
+#         #######
 
 
-        # Post setup() commands
+#         # Post setup() commands
 
-        check_call(f"pip3 install -e {BASE_DIR}".split())
+#         check_call(f"pip3 install -e {BASE_DIR}".split())
 
-        # Create databases for PostgreSQL or MySQL !IF! that is what the user 
-        if not user_defined_settings.precreated_database:
-            if 'postgresql' in user_defined_settings.database_engine:
-                print(
-                    "\n\n------------------------------------------------------------------------------------------\n\n"
-                    "Creating PostgreSQL Database\n"
-                )
-                check_call(["sudo", "-u", "postgres", "psql", "-c", f"CREATE DATABASE {user_defined_settings.database_name};"])
-                check_call(["sudo", "-u", "postgres", "psql", "-c", f"CREATE USER {user_defined_settings.database_username} WITH PASSWORD '{user_defined_settings.database_password}';"])
-                check_call(["sudo", "-u", "postgres", "psql", "-c", f"ALTER ROLE {user_defined_settings.database_username} SET client_encoding TO 'utf8';"])
-                check_call(["sudo", "-u", "postgres", "psql", "-c", f"ALTER ROLE {user_defined_settings.database_username} SET default_transaction_isolation TO 'read committed';"])
-                check_call(["sudo", "-u", "postgres", "psql", "-c", f"ALTER ROLE {user_defined_settings.database_username} SET timezone TO '{user_defined_settings.timezone}';"])
-                check_call(["sudo", "-u", "postgres", "psql", "-c", f"GRANT ALL PRIVILEGES ON DATABASE {user_defined_settings.database_name} TO {user_defined_settings.database_username};"])
+#         # Create databases for PostgreSQL or MySQL !IF! that is what the user 
+#         if not user_defined_settings.precreated_database:
+#             if 'postgresql' in user_defined_settings.database_engine:
+#                 print(
+#                     "\n\n------------------------------------------------------------------------------------------\n\n"
+#                     "Creating PostgreSQL Database\n"
+#                 )
+#                 check_call(["sudo", "-u", "postgres", "psql", "-c", f"CREATE DATABASE {user_defined_settings.database_name};"])
+#                 check_call(["sudo", "-u", "postgres", "psql", "-c", f"CREATE USER {user_defined_settings.database_username} WITH PASSWORD '{user_defined_settings.database_password}';"])
+#                 check_call(["sudo", "-u", "postgres", "psql", "-c", f"ALTER ROLE {user_defined_settings.database_username} SET client_encoding TO 'utf8';"])
+#                 check_call(["sudo", "-u", "postgres", "psql", "-c", f"ALTER ROLE {user_defined_settings.database_username} SET default_transaction_isolation TO 'read committed';"])
+#                 check_call(["sudo", "-u", "postgres", "psql", "-c", f"ALTER ROLE {user_defined_settings.database_username} SET timezone TO '{user_defined_settings.timezone}';"])
+#                 check_call(["sudo", "-u", "postgres", "psql", "-c", f"GRANT ALL PRIVILEGES ON DATABASE {user_defined_settings.database_name} TO {user_defined_settings.database_username};"])
             
-            elif 'mysql' in user_defined_settings.database_engine:
-                check_call(["sudo", "mysql", "-u", "root", "-Bse", f"CREATE DATABASE {user_defined_settings.database_name};"])
-                check_call(["sudo", "mysql", "-u", "root", "-Bse", f"CREATE USER '{user_defined_settings.database_username}'@'%' IDENTIFIED WITH mysql_native_password BY '{user_defined_settings.database_password}';"])
-                check_call(["sudo", "mysql", "-u", "root", "-Bse", f"GRANT ALL ON {user_defined_settings.database_name}.* TO '{user_defined_settings.database_username}'@'%';"])
-                check_call(["sudo", "mysql", "-u", "root", "-Bse", "FLUSH PRIVILEGES;"])
+#             elif 'mysql' in user_defined_settings.database_engine:
+#                 check_call(["sudo", "mysql", "-u", "root", "-Bse", f"CREATE DATABASE {user_defined_settings.database_name};"])
+#                 check_call(["sudo", "mysql", "-u", "root", "-Bse", f"CREATE USER '{user_defined_settings.database_username}'@'%' IDENTIFIED WITH mysql_native_password BY '{user_defined_settings.database_password}';"])
+#                 check_call(["sudo", "mysql", "-u", "root", "-Bse", f"GRANT ALL ON {user_defined_settings.database_name}.* TO '{user_defined_settings.database_username}'@'%';"])
+#                 check_call(["sudo", "mysql", "-u", "root", "-Bse", "FLUSH PRIVILEGES;"])
         
         
-        # Run the collect static command and check if using venv or not
-        try:
-            check_call(f"{PYTHON_VENV_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py collectstatic".split())
-            USING_VENV = True
-        except FileNotFoundError:
-            check_call(f"{PYTHON_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py collectstatic".split())
-            USING_VENV = False
+#         # Run the collect static command and check if using venv or not
+#         try:
+#             check_call(f"{PYTHON_VENV_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py collectstatic".split())
+#             USING_VENV = True
+#         except FileNotFoundError:
+#             check_call(f"{PYTHON_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py collectstatic".split())
+#             USING_VENV = False
 
 
-        # Edit settings.py file
+#         # Edit settings.py file
 
-        # !!IMPORTANT!! - The spacing for these strings need to stay how they are
-        database_info = \
-            "DATABASES = {\n"\
-            "    'default': {\n"\
-            f"        'ENGINE': '{user_defined_settings.database_engine}',\n"\
-            f"        'NAME': '{user_defined_settings.database_name}',\n"\
-            f"        'USER': '{user_defined_settings.database_username}',\n"\
-            f"        'PASSWORD': '{user_defined_settings.database_password}',\n"\
-            f"        'HOST': '{user_defined_settings.database_host}',\n"\
-            f"        'PORT': '{user_defined_settings.database_port}'\n"\
-            "    }\n"\
-            "}\n"
+#         # !!IMPORTANT!! - The spacing for these strings need to stay how they are
+#         database_info = \
+#             "DATABASES = {\n"\
+#             "    'default': {\n"\
+#             f"        'ENGINE': '{user_defined_settings.database_engine}',\n"\
+#             f"        'NAME': '{user_defined_settings.database_name}',\n"\
+#             f"        'USER': '{user_defined_settings.database_username}',\n"\
+#             f"        'PASSWORD': '{user_defined_settings.database_password}',\n"\
+#             f"        'HOST': '{user_defined_settings.database_host}',\n"\
+#             f"        'PORT': '{user_defined_settings.database_port}'\n"\
+#             "    }\n"\
+#             "}\n"
 
-        # Read through the settings file
-        with open(SETTINGS_FILE, 'r') as f:
-            settings_lines = f.readlines()
+#         # Read through the settings file
+#         with open(SETTINGS_FILE, 'r') as f:
+#             settings_lines = f.readlines()
         
-        # Overwrite the settings.py file with new data
-        with open(SETTINGS_FILE, 'w') as f:
+#         # Overwrite the settings.py file with new data
+#         with open(SETTINGS_FILE, 'w') as f:
 
-            for line in settings_lines:
-                # Change database info if not using the default database
-                if 'DATABASES = {' in line:
-                    if 'sqlite3' not in user_defined_settings.database_engine:
-                        f.write(database_info)
-                        continue
+#             for line in settings_lines:
+#                 # Change database info if not using the default database
+#                 if 'DATABASES = {' in line:
+#                     if 'sqlite3' not in user_defined_settings.database_engine:
+#                         f.write(database_info)
+#                         continue
                 
-                # Change timezone data if not using default
-                elif 'TIME_ZONE = ' in line: 
-                    if user_defined_settings.timezone != 'America/Los_Angeles':
-                        f.write(f"TIME_ZONE = '{user_defined_settings.timezone}'")
-                        continue
-                    else:
-                        f.write(line)
+#                 # Change timezone data if not using default
+#                 elif 'TIME_ZONE = ' in line: 
+#                     if user_defined_settings.timezone != 'America/Los_Angeles':
+#                         f.write(f"TIME_ZONE = '{user_defined_settings.timezone}'")
+#                         continue
+#                     else:
+#                         f.write(line)
                 
-                # Change the static files code to contain STATICFILES_DIRS instead of STATIC_ROOT
-                elif 'STATIC_ROOT = ' in line:
-                    f.write("STATICFILES_DIRS = [\n    os.path.join(BASE_DIR, 'static'),\n]\n")
-                    continue
+#                 # Change the static files code to contain STATICFILES_DIRS instead of STATIC_ROOT
+#                 elif 'STATIC_ROOT = ' in line:
+#                     f.write("STATICFILES_DIRS = [\n    os.path.join(BASE_DIR, 'static'),\n]\n")
+#                     continue
                 
-                # Change the timedelta info if not using the default
-                elif 'TIMEDELTA = timedelta' in line:
-                    if not user_defined_settings.use_default_timedelta:
-                        f.write(f"TIMEDELTA = timedelta(hours={int(user_defined_settings.timedelta_hours)}, minutes={int(user_defined_settings.timedelta_minutes)})")
-                        continue
+#                 # Change the timedelta info if not using the default
+#                 elif 'TIMEDELTA = timedelta' in line:
+#                     if not user_defined_settings.use_default_timedelta:
+#                         f.write(f"TIMEDELTA = timedelta(hours={int(user_defined_settings.timedelta_hours)}, minutes={int(user_defined_settings.timedelta_minutes)})")
+#                         continue
                 
-                # If the line isn't one that needs to be changed then the line is just written to the file
-                else:
-                    f.write(line)
-                    # new_settings_lines.append(line)
+#                 # If the line isn't one that needs to be changed then the line is just written to the file
+#                 else:
+#                     f.write(line)
+#                     # new_settings_lines.append(line)
         
 
-        # Create crontab file
-        crontab_text = ""
-        if user_defined_settings.timedelta_minutes == 0:
-            crontab_text += "0 "
-        else:
-            crontab_text += f"*/{user_defined_settings.timedelta_minutes} "
+#         # Create crontab file
+#         crontab_text = ""
+#         if user_defined_settings.timedelta_minutes == 0:
+#             crontab_text += "0 "
+#         else:
+#             crontab_text += f"*/{user_defined_settings.timedelta_minutes} "
         
-        if user_defined_settings.timedelta_hours == 0 or user_defined_settings.timedelta_hours == 1:
-            crontab_text += "* "
-        else:
-            crontab_text += f"*/{user_defined_settings.timedelta_hours} "
+#         if user_defined_settings.timedelta_hours == 0 or user_defined_settings.timedelta_hours == 1:
+#             crontab_text += "* "
+#         else:
+#             crontab_text += f"*/{user_defined_settings.timedelta_hours} "
         
-        crontab_text += f"* * * {BASE_DIR}/updatetonerdata.sh\n"
+#         crontab_text += f"* * * {BASE_DIR}/updatetonerdata.sh\n"
 
-        with open(BASE_DIR + "/crontab_updatetonerdata", 'w') as f:
-            f.write(crontab_text)
+#         with open(BASE_DIR + "/crontab_updatetonerdata", 'w') as f:
+#             f.write(crontab_text)
 
 
-        # Modify updatetonerdata.sh
-        with open(BASE_DIR + "/updatetonerdata.sh", 'r') as f:
-            update_toner_data_lines = f.readlines()
+#         # Modify updatetonerdata.sh
+#         with open(BASE_DIR + "/updatetonerdata.sh", 'r') as f:
+#             update_toner_data_lines = f.readlines()
         
-        with open(BASE_DIR + "/updatetonerdata.sh", 'w') as f:
-            for line in update_toner_data_lines:
-                if 'PROJECT_PATH=' in line:
-                    f.write(f"PROJECT_PATH={BASE_DIR}\n")
-                else:
-                    f.write(line)
+#         with open(BASE_DIR + "/updatetonerdata.sh", 'w') as f:
+#             for line in update_toner_data_lines:
+#                 if 'PROJECT_PATH=' in line:
+#                     f.write(f"PROJECT_PATH={BASE_DIR}\n")
+#                 else:
+#                     f.write(line)
         
 
-        # Activate crontab
-        check_call(f"crontab {BASE_DIR}/crontab_updatetonerdata".split())
+#         # Activate crontab
+#         check_call(f"crontab {BASE_DIR}/crontab_updatetonerdata".split())
 
 
-        # Make Django database migrations
-        try:
-            check_call(f"{PYTHON_VENV_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py makemigrations".split())
-            check_call(f"{PYTHON_VENV_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py migrate".split())
-        except FileNotFoundError:
-            check_call(f"{PYTHON_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py makemigrations".split())
-            check_call(f"{PYTHON_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py migrate".split())
+#         # Make Django database migrations
+#         try:
+#             check_call(f"{PYTHON_VENV_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py makemigrations".split())
+#             check_call(f"{PYTHON_VENV_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py migrate".split())
+#         except FileNotFoundError:
+#             check_call(f"{PYTHON_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py makemigrations".split())
+#             check_call(f"{PYTHON_PATH} {BASE_DIR}/Open_Printer_Management_System/manage.py migrate".split())
 
 
-        # Create Gunicorn socket file
-        gunicorn_socket_file_text = \
-            "[Unit]\n"\
-            "Description=gunicorn socket\n\n"\
-            "[Socket]\n"\
-            "ListenStream=/run/gunicorn.sock\n\n"\
-            "[Install]\n"\
-            "WantedBy=sockets.target\n"
+#         # Create Gunicorn socket file
+#         gunicorn_socket_file_text = \
+#             "[Unit]\n"\
+#             "Description=gunicorn socket\n\n"\
+#             "[Socket]\n"\
+#             "ListenStream=/run/gunicorn.sock\n\n"\
+#             "[Install]\n"\
+#             "WantedBy=sockets.target\n"
         
-        check_call(["sudo", "bash", "-c", f"echo '{gunicorn_socket_file_text}' > /etc/systemd/system/gunicorn.socket"])
+#         check_call(["sudo", "bash", "-c", f"echo '{gunicorn_socket_file_text}' > /etc/systemd/system/gunicorn.socket"])
 
 
-        # Create Gunicorn service file
-        ## Figure out location of gunicorn
-        if os.path.isfile(f"{BASE_DIR}/venv/bin/gunicorn"):
-            gunicorn_file_location = f"{BASE_DIR}/venv/bin/gunicorn"
-        else:
-            from subprocess import Popen, PIPE
-            gunicorn_file_location_byte = Popen("pip3 show gunicorn".split(), stdout=PIPE)
-            gunicorn_file_location_text = gunicorn_file_location_byte.stdout.read().decode('utf-8')
+#         # Create Gunicorn service file
+#         ## Figure out location of gunicorn
+#         if os.path.isfile(f"{BASE_DIR}/venv/bin/gunicorn"):
+#             gunicorn_file_location = f"{BASE_DIR}/venv/bin/gunicorn"
+#         else:
+#             from subprocess import Popen, PIPE
+#             gunicorn_file_location_byte = Popen("pip3 show gunicorn".split(), stdout=PIPE)
+#             gunicorn_file_location_text = gunicorn_file_location_byte.stdout.read().decode('utf-8')
 
-            for line in gunicorn_file_location_text.split('\n'):
-                if 'Location: ' in line:
-                    gunicorn_file_location = line.replace('Location: ', '') + '/gunicorn'
+#             for line in gunicorn_file_location_text.split('\n'):
+#                 if 'Location: ' in line:
+#                     gunicorn_file_location = line.replace('Location: ', '') + '/gunicorn'
 
-        # Make gunicorn file
-        gunicorn_service_file_text = \
-            "[Unit]\n"\
-            "Description=gunicorn daemon\n"\
-            "Requires=gunicorn.socket\n"\
-            "After=network.target\n\n"\
-            "[Service]\n"\
-            f"User={getuser()}\n"\
-            "Group=www-data\n"\
-            f"WorkingDirectory={BASE_DIR}/Open-Printer-Management-System\n"\
-            f"ExecStart={gunicorn_file_location} \\\n"\
-            "           --access-logfile - \\\n"\
-            "           --workers 3 \\\n"\
-            "           --bind unix:/run/gunicorn.sock \\\n"\
-            "           Open-Printer-Management-System.wsgi:application\n\n"\
-            "[Install]\n"\
-            "WantedBy=multi-user.target\n"
+#         # Make gunicorn file
+#         gunicorn_service_file_text = \
+#             "[Unit]\n"\
+#             "Description=gunicorn daemon\n"\
+#             "Requires=gunicorn.socket\n"\
+#             "After=network.target\n\n"\
+#             "[Service]\n"\
+#             f"User={str(getuser())}\n"\
+#             "Group=www-data\n"\
+#             f"WorkingDirectory={BASE_DIR}/Open-Printer-Management-System\n"\
+#             f"ExecStart={str(gunicorn_file_location)} --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock Open-Printer-Management-System.wsgi:application\n\n"\
+#             "[Install]\n"\
+#             "WantedBy=multi-user.target\n"
 
-        check_call(["sudo", "bash", "-c", f"echo '{gunicorn_service_file_text}' > /etc/systemd/system/gunicorn.service"])
+#         check_call(["sudo", "bash", "-c", f"echo '{gunicorn_service_file_text}' > /etc/systemd/system/gunicorn.service"])
 
-        # Start and enable gunicorn socket
-        try:
-            check_call("sudo systemctl start gunicorn.socket".split())
-            check_call("sudo systemctl enable gunicorn.socket".split())
-        except CalledProcessError:
-            check_call("sudo service gunicorn.socket start".split())
+#         # Start and enable gunicorn socket
+#         try:
+#             check_call("sudo systemctl start gunicorn.socket".split())
+#             check_call("sudo systemctl enable gunicorn.socket".split())
+#         except CalledProcessError:
+#             check_call("sudo service gunicorn.socket start".split())
         
-        # Activate gunicorn
-        check_call("curl --unix-socket /run/gunicorn.sock localhost".split())
+#         # Activate gunicorn
+#         check_call("curl --unix-socket /run/gunicorn.sock localhost".split())
 
 
-        # Create Nginx file
-        nginx_file_text = \
-            "server {\n"\
-            "    listen 80;\n"\
-            "    server_name 127.0.0.1;\n"\
-            "    location = /favicon.ico { access_log off; log_not_found off; }\n"\
-            "    location /static/ {\n"\
-            f"        root {BASE_DIR}/Open-Printer-Management-System;\n"\
-            "    }\n"\
-            "    location / {\n"\
-            "        include proxy_params;\n"\
-            "        proxy_pass http://unix:/run/gunicorn.sock;\n"\
-            "    }\n"\
-            "}\n"
+#         # Create Nginx file
+#         nginx_file_text = \
+#             "server {\n"\
+#             "    listen 80;\n"\
+#             "    server_name 127.0.0.1;\n"\
+#             "    location = /favicon.ico { access_log off; log_not_found off; }\n"\
+#             "    location /static/ {\n"\
+#             f"        root {BASE_DIR}/Open-Printer-Management-System;\n"\
+#             "    }\n"\
+#             "    location / {\n"\
+#             "        include proxy_params;\n"\
+#             "        proxy_pass http://unix:/run/gunicorn.sock;\n"\
+#             "    }\n"\
+#             "}\n"
 
-        check_call(["sudo", "bash", "-c", f"echo '{nginx_file_text}' > /etc/nginx/sites-available/Open-Printer-Management-System"])
+#         check_call(["sudo", "bash", "-c", f"echo '{nginx_file_text}' > /etc/nginx/sites-available/Open-Printer-Management-System"])
 
-        # Enable Nginx site
-        check_call("sudo ln -s /etc/nginx/sites-available/Open-Printer-Management-System /etc/nginx/sites-enabled".split())
+#         # Enable Nginx site
+#         check_call("sudo ln -s /etc/nginx/sites-available/Open-Printer-Management-System /etc/nginx/sites-enabled".split())
 
-        # Restart Nginx service
-        try:
-            check_call("sudo systemctl restart nginx".split())
-        except CalledProcessError:
-            check_call("sudo service nginx restart".split())
+#         # Restart Nginx service
+#         try:
+#             check_call("sudo systemctl restart nginx".split())
+#         except CalledProcessError:
+#             check_call("sudo service nginx restart".split())
 
 
-        print(
-            "\n\n\n\n\n------------------------------------------------------------------------------------------\n\n"
-            "Installation complete!\n"
-        )
+#         print(
+#             "\n\n\n\n\n------------------------------------------------------------------------------------------\n\n"
+#             "Installation complete!\n"
+#         )
 
 
 setup(
@@ -491,9 +487,6 @@ setup(
         'easysnmp>=0.2.5,<0.3.0',
         'gunicorn>=20.0,<21'
     ],
-    cmdclass={
-        'install': InstallCommand,
-    },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
