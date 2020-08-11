@@ -78,6 +78,7 @@ use_default_timezone_func() {
     while true; do
         read -p "Do you want to use the default timezone? [Y/n] " default_timezone
         if [ -z "$default_timezone" ]; then
+            timezone_data="America/Los_Angeles"
             return
         fi
 
