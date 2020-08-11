@@ -41,7 +41,7 @@ get_database_data() {
 
     database_name="open_printer_management_system"
     database_username="open_printer_management_system_user"
-    database_password="!Open_Printer_Management_System_P@ssword!"
+    database_password="0pen_Pr1nter_M@n@gement_System_P@ssw0rd"
     database_host="127.0.0.1"
 }
 
@@ -216,18 +216,23 @@ fi
 
 # # Start of Linux package installs
 current_directory=$PWD
+if [ -z "$SUDO_USER" ]; then
+    username=$USER
+else
+    username=$SUDO_USER
+fi
 
 # Create Python3 virtual environment
 {
     python3 -m venv $current_directory/venv
 } || {
-    apt install python3-venv -y
+    sudo apt install python3-venv -y
     python3 -m venv $current_directory/venv
 }
 
 
-apt update
-apt install libsnmp-dev snmp-mibs-downloader python3-dev gcc nginx curl -y
+sudo apt update
+sudo apt install libsnmp-dev snmp-mibs-downloader python3-dev gcc nginx curl -y
 
 if [ $database_engine = "django.db.backends.postgresql" ]; then
 
@@ -235,8 +240,8 @@ if [ $database_engine = "django.db.backends.postgresql" ]; then
     $current_directory/venv/bin/python3 -m pip install psycopg2-binary
 
     # Install, start, and enable PostgreSQL
-    apt install postgresql postgresql-contrib -y
-    systemctl start postgresql && systemctl enable postgresql || service postgresql start
+    sudo apt install postgresql postgresql-contrib -y
+    sudo systemctl start postgresql && sudo systemctl enable postgresql || sudo service postgresql start
 
     # Create database and user
     sudo -u postgres psql -c "CREATE DATABASE $database_name;"
@@ -252,8 +257,8 @@ elif [ $database_engine = "django.db.backends.mysql" ]; then
     $current_directory/venv/bin/python3 -m pip install mysqlclient
 
     # Install, start, and enable MySQL
-    apt install mysql-server libmysqlclient-dev default-libmysqlclient-dev -y
-    systemctl start mysql && systemctl enable mysql || service mysql start
+    sudo apt install mysql-server libmysqlclient-dev default-libmysqlclient-dev -y
+    sudo systemctl start mysql && sudo systemctl enable mysql || sudo service mysql start
 
     # Create database and user
     sudo mysql -u root -Bse "CREATE DATABASE $database_name;"
@@ -264,14 +269,12 @@ elif [ $database_engine = "django.db.backends.mysql" ]; then
 fi
 
 # Install setup.py
-$current_directory/venv/bin/python3 $current_directory/setup.py install
+$current_directory/venv/bin/python3 -m pip install $current_directory
 
 # Django specific commands
-$current_directory/venv/bin/python3 $current_directory/Open_Printer_Management_System/manage.py collectstatic --noinput
-
 $current_directory/venv/bin/python3 $current_directory/Open_Printer_Management_System/manage.py makemigrations
-
 $current_directory/venv/bin/python3 $current_directory/Open_Printer_Management_System/manage.py migrate
+$current_directory/venv/bin/python3 $current_directory/Open_Printer_Management_System/manage.py collectstatic --noinput
 
 # Change static files code in settings.py
 original_static_data="STATIC_ROOT = os.path.join(BASE_DIR, 'static')"
@@ -298,7 +301,8 @@ crontab_text="${crontab_text}* * * ${current_directory}/updatetonerdata.sh"
 echo "${crontab_text}" > $current_directory/crontab_updatetonerdata
 
 # Activate crontab
-crontab -u $SUDO_USER $current_directory/crontab_updatetonerdata
+crontab -u $username $current_directory/crontab_updatetonerdata
+
 
 # Create Gunicorn socket file
 gunicorn_socket_file_text=\
@@ -312,7 +316,7 @@ ListenStream=/run/gunicorn.sock
 WantedBy=sockets.target
 "
 
-echo "${gunicorn_socket_file_text}" > /etc/systemd/system/gunicorn.socket
+echo "${gunicorn_socket_file_text}" | sudo tee /etc/systemd/system/gunicorn.socket
 
 
 # Create Gunicorn service file
@@ -323,25 +327,27 @@ Requires=gunicorn.socket
 After=network.target
 
 [Service]
-User=$SUDO_USER
+User=$username
 Group=www-data
-WorkingDirectory=$current_directory/Open-Printer-Management-System
-ExecStart=$current_directory/venv/bin/gunicorn \
-          --access-logfile - \
-          --workers 3 \
-          --bind unix:/run/gunicorn.sock \
-          Open-Printer-Management-System.wsgi:application
+WorkingDirectory=$current_directory/Open_Printer_Management_System
+ExecStart=$current_directory/venv/bin/gunicorn \\
+          --access-logfile - \\
+          --workers 3 \\
+          --bind unix:/run/gunicorn.sock \\
+          Open_Printer_Management_System.wsgi:application
 
 [Install]
 WantedBy=multi-user.target
 "
-echo "${gunicorn_service_file_text}" > /etc/systemd/system/gunicorn.service
+echo "${gunicorn_service_file_text}" | sudo tee /etc/systemd/system/gunicorn.service
 
 # Start and enable gunicorn socket
-systemctl start gunicorn.socket && systemctl enable gunicorn.socket || service gunicorn.socket start
+sudo systemctl start gunicorn.socket && sudo systemctl enable gunicorn.socket || sudo service gunicorn.socket start
 
 # Activate gunicorn
 curl --unix-socket /run/gunicorn.sock localhost
+
+sudo systemctl daemon-reload && sudo systemctl restart gunicorn
 
 # Create Nginx file
 nginx_file_text=\
@@ -350,7 +356,7 @@ nginx_file_text=\
     server_name 127.0.0.1;
     location = /favicon.ico { access_log off; log_not_found off; }
     location /static/ {
-        root $current_directory/Open-Printer-Management-System;
+        root $current_directory/Open_Printer_Management_System;
     }
     location / {
         include proxy_params;
@@ -358,13 +364,23 @@ nginx_file_text=\
     }
 }
 "
-echo "${nginx_file_text}" > /etc/nginx/sites-available/Open-Printer-Management-System
+echo "${nginx_file_text}" | sudo tee /etc/nginx/sites-available/Open-Printer-Management-System
 
 # Enable Nginx site
-ln -s /etc/nginx/sites-available/Open-Printer-Management-System /etc/nginx/sites-enabled
+sudo ln -s /etc/nginx/sites-available/Open-Printer-Management-System /etc/nginx/sites-enabled
 
 # Restart Nginx service
-systemctl restart nginx || service nginx restart
+sudo systemctl restart nginx || sudo service nginx restart
+
+# Install enable and allow firewall apps
+sudo apt install ufw -y
+
+if sudo ufw status | grep 'Status: inactive'; then
+    echo "y" |sudo ufw enable
+fi
+
+sudo ufw allow 'Nginx Full'
+sudo ufw allow OpenSSH
 
 # Tell the user the installation has completed
 echo "\n\n\n\n\n------------------------------------------------------------------------------------------\n"
