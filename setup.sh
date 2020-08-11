@@ -350,11 +350,14 @@ curl --unix-socket /run/gunicorn.sock localhost
 
 sudo systemctl daemon-reload && sudo systemctl restart gunicorn
 
+# Get IP address for Nginx
+ip_address=$(hostname -I)
+
 # Create Nginx file
 nginx_file_text=\
 "server {
     listen 80;
-    server_name 127.0.0.1;
+    server_name 127.0.0.1 ${ip_address};
     location = /favicon.ico { access_log off; log_not_found off; }
     location /static/ {
         root $current_directory/Open_Printer_Management_System;
