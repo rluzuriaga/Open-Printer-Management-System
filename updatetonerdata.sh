@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
-SECONDS=0
-PROJECT_PATH=/path/to/project/Open-Printer-Management-System
-CRON_LOG_FILE=${PROJECT_PATH}/logs/updatetonerdata.log
+seconds=0
+cron_log_file=${PWD}/logs/updatetonerdata.log
 
-echo "Starting" >> ${CRON_LOG_FILE}
-date >> ${CRON_LOG_FILE}
+echo "Starting" >> ${cron_log_file}
+date >> ${cron_log_file}
 
-cd ${PROJECT_PATH}
+cd ${PWD}
 source venv/bin/activate
 cd Open_Printer_Management_System
-python manage.py updatetonerdata >> ${CRON_LOG_FILE} 2>&1
+python manage.py updatetonerdata >> ${cron_log_file} 2>&1
 
-echo "Finished." >> ${CRON_LOG_FILE}
-duration=$SECONDS
-echo "$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n" >> ${CRON_LOG_FILE}
+echo "Finished." >> ${cron_log_file}
+duration=$seconds
+echo "$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed.\n" >> ${cron_log_file}
