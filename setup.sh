@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Hacky way of asking the user to input the sudo password first
+sudo echo ""
+
 # # User defined/selection for database
 use_default_database_func() {
     echo "------------------------------------------------------------------------------------------\n"
