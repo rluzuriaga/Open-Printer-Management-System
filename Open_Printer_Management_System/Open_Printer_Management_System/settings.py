@@ -78,12 +78,7 @@ WSGI_APPLICATION = 'Open_Printer_Management_System.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),}}
 
 
 # Password validation
@@ -133,15 +128,7 @@ MESSAGE_TAGS = {
 
 STATIC_URL = '/static/'
 
-# For some reason I had to uncomment this line and comment the STATICFILES_DIRS
-# to be able to run python manage.py collectstatic
-# But comment this line and uncomment the STATICFILES_DIRS to have the static
-# Files actually work in the site
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
 
 TIMEDELTA = timedelta(minutes=10)
