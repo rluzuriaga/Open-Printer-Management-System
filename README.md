@@ -50,6 +50,7 @@ I am not a front-end developer, so I decided to use a simple Bootstrap template.
 
 If you find an issue or have any ideas for more things to implement, you can create an issue and I will take a look at it. Your issue/request may have already been posted so take a look at the issues already created first.
 
+
 <br />
 
 ## License
