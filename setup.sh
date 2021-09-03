@@ -376,6 +376,11 @@ echo "${nginx_file_text}" | sudo tee /etc/nginx/sites-available/Open-Printer-Man
 # Enable Nginx site
 sudo ln -s /etc/nginx/sites-available/Open-Printer-Management-System /etc/nginx/sites-enabled
 
+# Change user for Nginx config
+original_nginx_user_data="user www-data;"
+new_nginx_user_data="user $username;"
+sudo sed -i -e "s~${original_nginx_user_data}~${new_nginx_user_data}~g" /etc/nginx/nginx.conf
+
 # Restart Nginx service
 sudo systemctl restart nginx || sudo service nginx restart
 
