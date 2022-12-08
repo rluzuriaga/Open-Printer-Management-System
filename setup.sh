@@ -394,6 +394,27 @@ fi
 sudo ufw allow 'Nginx Full'
 sudo ufw allow OpenSSH
 
+echo -e "\n\n------------------------------------------------------------------------------------------\n"
+while :; do
+    read -p "Please enter the username for the admin account: " admin_username
+    read -p "Please enter the password for the admin account: " admin_password
+    read -p "Please enter the email address for the admin account: " admin_email
+
+    export DJANGO_SUPERUSER_USERNAME=$admin_username
+    export DJANGO_SUPERUSER_PASSWORD=$admin_password
+    export DJANGO_SUPERUSER_EMAIL=$admin_email
+
+    $current_directory/venv/bin/python $current_directory/Open_Printer_Management_System/manage.py createsuperuser --no-input
+
+    if [[ $? == 0 ]]; then
+        unset DJANGO_SUPERUSER_USERNAME
+        unset DJANGO_SUPERUSER_PASSWORD
+        unset DJANGO_SUPERUSER_EMAIL
+        break
+    fi
+    echo ""
+done
+
 # Tell the user the installation has completed
 echo -e "\n\n\n\n\n------------------------------------------------------------------------------------------\n"
 echo -e "Installation complete!\n"
