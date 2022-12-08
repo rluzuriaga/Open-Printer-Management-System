@@ -58,8 +58,8 @@
                                   
                             {% else %}
                               <div class="progress-bar bg-danger" role="progressbar" style="width: {{ printer_levels.level }}%;" aria-valuenow="{{ printer_levels.level }}" aria-valuemin="0" aria-valuemax="100">
-                                <p class="justify-content-center d-flex position-absolute w-100" style="color: black;"><strong>{{ printer_levels.level }}%</strong></p>
-                              </div>                              
+                                <div class="justify-content-center d-flex position-absolute w-100" style="color: black;"><strong>{{ printer_levels.level }}%</strong></div>
+                              </div>                    
 
                             {% endif %}
 
