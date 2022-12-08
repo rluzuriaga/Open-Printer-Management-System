@@ -45,6 +45,8 @@
 
                         {% if printer_levels.level == "OK" %}
                           {{ printer_levels.level }}
+                        {% elif printer_levels.level == "Unknown" %}
+                        {{ printer_levels.level }}
                         {% elif printer_levels.level == "Not on" %}
                         {% comment %} This is here to not add a progressbar when the printer is off. {% endcomment %}
                         {% else %}
