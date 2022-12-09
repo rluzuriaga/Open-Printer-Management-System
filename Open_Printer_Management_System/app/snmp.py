@@ -4,9 +4,9 @@ from django.conf import settings
 
 import re
 from easysnmp import Session
-from easysnmp.exceptions import EasySNMPTimeoutError, EasySNMPConnectionError
+from easysnmp.exceptions import EasySNMPTimeoutError, EasySNMPConnectionError, EasySNMPNoSuchNameError
 
-class SNMP():
+class SNMP:
     """ 
 
     Args:
@@ -33,11 +33,9 @@ class SNMP():
                 for updating the database.
             DICTIONARY STRUCTURE:
                 {
-                    'PRINTER NAME': {
-                        'MODULE IDENTIFIER/TONER COLOR': 'LEVEL',
-                        'Cyan': '13', ...
-                    },
-                    '8X11_2232': {...}
+                    'MODULE IDENTIFIER/TONER COLOR': 'LEVEL',
+                    'Cyan': '13',
+                    'Black': '29',
                     ...
                 }
         """
@@ -48,114 +46,49 @@ class SNMP():
             number_of_consumables = len(self.session.walk(".1.3.6.1.2.1.43.11.1.1.6.1"))
         except (SystemError, EasySNMPTimeoutError, EasySNMPConnectionError):
 
-            # The text in this dictionay is checked in the template, so don't change it
+            # The text in this dictionary is checked in the template, so don't change it
             #   without changing the template's if statement as well.
             consumables_dict = {"Printer seems to be off": "Not on"}
             return consumables_dict                    
 
         consumables_dict = dict()
 
-        # Iterate through each toner/module and add the colorant, capacity, and level
-        #   of each one in the consumables_dict.
         for i in range(1, number_of_consumables + 1):
-            # The full toner/module name
-            key = self.session.get(".1.3.6.1.2.1.43.11.1.1.6.1." + str(i)).value
-            
-            consumables_dict[key] = dict()
+            try:
+                # Get the colorant name.
+                # Doing this so that the supply name is only `Black` instead of `Canon GPR-55 Black Toner`
+                supply_name = self.session.get(".1.3.6.1.2.1.43.12.1.1.4.1." + str(i)).value
+            except EasySNMPNoSuchNameError:
+                # In my testing, I have only gotten to this exception on a Canon copier.
+                # It happens because there is no colorant name for waste toners or drum units.
+                continue
 
-            # Integer with the SNMP value of the toner/module, used to get the plain module name without extra data
-            consumables_dict[key]['colorant'] = self.session.get(".1.3.6.1.2.1.43.11.1.1.3.1." + str(i)).value
+            # Supply description example: `Canon GPR-55 Black Toner`
+            supply_description = self.session.get(".1.3.6.1.2.1.43.11.1.1.6.1." + str(i)).value
+            supply_max_capacity = self.session.get(".1.3.6.1.2.1.43.11.1.1.8.1." + str(i)).value
+            supply_level = self.session.get(".1.3.6.1.2.1.43.11.1.1.9.1." + str(i)).value
 
-            consumables_dict[key]['capacity'] = self.session.get(".1.3.6.1.2.1.43.11.1.1.8.1." + str(i)).value
-            consumables_dict[key]['level'] = self.session.get(".1.3.6.1.2.1.43.11.1.1.9.1." + str(i)).value
+            # Sometimes the supply description is in hexadecimal.
+            # This tries to convert hex to ascii if that is the case.
+            try:
+                supply_description = bytes.fromhex(supply_description).decode('ascii')
+            except ValueError:
+                pass
 
-        # Cleanup the dictionary data to make it ready to update the database
-        cleaned_levels_dict = self._data_cleanup(consumables_dict)
-
-        return cleaned_levels_dict
-
-    def _data_cleanup(self, uncleaned_dict):
-        """ Internal function to clean a dictionary and make it the format to easily update the database.
-        
-        Args:
-            uncleaned_dict (dict): Dictionary with uncleaned printer toner data retrieved from SNMP.
-            DICTIONARY STRUCTURE:
-            {
-                'FULL MODULE NAME': {
-                    'colorant': 'INTEGER',
-                    'capacity': 'INTEGER',
-                    'level': 'INTEGER'
-                },
-                'Black Cartridge 508A HP CF360A\x00': {
-                    'colorant': '1',
-                    'capacity': '100',
-                    'level': '38'
-                }
-            }
-        
-        Returns:
-            cleaned_levels_dict (dict): Dictionary with cleaned printer toner data formated in a way that can be easily 
-                used to update the database.
-            DICTIONARY STRUCTURE:
-            {
-                'PRINTER NAME': {
-                    'MODULE IDENTIFIER/TONER COLOR': 'LEVEL',
-                    'Cyan': '13', ...
-                },
-                '8X11_2232': {...}
-                ...
-            }
-        """
-        cleaned_levels_dict = dict()
-
-        for full_module_name, toner_data_dict in uncleaned_dict.items():
-            capacity = None
-            level = None
-            colorant = None
-
-            # Iterate through the toner data dictionary to create the capacity, colorant,
-            #   and level variables.
-            for key, value in toner_data_dict.items():
-                if key == 'capacity':
-                    capacity = value
-                elif key == 'level':
-                    level = value
-                elif key == 'colorant':
-                    colorant = value
-            
-            # Get the toner/module name from the printer's SNMP data using the colorant's value.
-            module_name = self.session.get(".1.3.6.1.2.1.43.12.1.1.4.1." + str(colorant)).value
-            
-            # Some printer's fimware doesn't have a value for for the module name when trying to
-            #   get it from the colorant, outputing 'NOSUCHINSTANCE'.
-            # If that value is given so then the module name falls back to the full_module_name
-            #   but needs to be cleaned from extra data.
-            if module_name == "NOSUCHINSTANCE":
-                module_name = full_module_name
+            if supply_level == "-3":
+                level = "OK"
+            elif supply_level == "-2":
+                level = "Unknown"
             else:
-                # This regex code is here because some of the module names appear like this
-                #   'photoBlack', so the regex just seperates the words to then be capitalized.
-                module_name = re.sub(r"(\w)([A-Z])", r"\1 \2", module_name)
-                module_name = module_name.title()
-            
-            # Some values return a unicode null value at the end of the string, so this removes it.
-            module_name = module_name.replace(u'\x00', '')
+                level_percent = (int(supply_level) / int(supply_max_capacity)) * 100
+                level = "{:.0f}".format(level_percent)
 
-            # SNMP returns some specific values for "OK" and "NA", so this checks for those values
-            #   in level.
-            # If the value is not "OK" or "NA", then the percentage is calculated by dividing level
-            #   by capacity then multiplying by 100.
-            if str(level) == '-3':
-                cleaned_levels_dict[module_name] = 'OK'
-            elif str(level) == '-2':
-                cleaned_levels_dict[module_name] = 'NA'
+            if supply_name.upper() == "NOSUCHINSTANCE":
+                consumables_dict[supply_description] = level
             else:
-                level_percentage = float(level) / float(capacity) * 100
+                consumables_dict[supply_name.title()] = level
 
-                # This string format removes the decimal value after the percentage
-                cleaned_levels_dict[module_name] = "{:.0f}".format(level_percentage)
-
-        return cleaned_levels_dict
+        return consumables_dict
 
 
 def determine_snmp_version(hostname):
@@ -196,6 +129,7 @@ def determine_snmp_version(hostname):
                     version = -2
         else:
             version = -2
+    
     
     return version
 
