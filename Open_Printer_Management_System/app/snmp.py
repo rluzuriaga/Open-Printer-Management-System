@@ -4,7 +4,7 @@ from django.conf import settings
 
 import re
 from easysnmp import Session
-from easysnmp.exceptions import EasySNMPTimeoutError, EasySNMPConnectionError, EasySNMPNoSuchNameError
+from easysnmp.exceptions import EasySNMPTimeoutError, EasySNMPConnectionError, EasySNMPNoSuchNameError, EasySNMPError
 
 class SNMP:
     """ 
@@ -108,29 +108,22 @@ def determine_snmp_version(hostname):
     version = -1
 
     try:
-        session = Session(hostname=hostname, community='public', version=3)
+        session = Session(hostname=hostname, community='public', version=3, retries=1)
         description = session.get('.1.3.6.1.2.1.1.1.0')
         version = 3
-    except SystemError as error:
-        if "returned NULL without setting an error" in str(error):
+    except (EasySNMPTimeoutError, EasySNMPError):
+        try:
+            session = Session(hostname=hostname, community='public', version=2, retries=1)
+            description = session.get('.1.3.6.1.2.1.1.1.0')
+            version = 2
+        except (EasySNMPTimeoutError, EasySNMPError):
             try:
-                session = Session(hostname=hostname, community='public', version=2)
+                session = Session(hostname=hostname, community='public', version=1, retries=1)
                 description = session.get('.1.3.6.1.2.1.1.1.0')
-                version = 2
-            except SystemError as error:
-                if "returned NULL without setting an error" in str(error):
-                    try:
-                        session = Session(hostname=hostname, community='public', version=1)
-                        description = session.get('.1.3.6.1.2.1.1.1.0')
-                        version = 1
-                    except (SystemError, EasySNMPTimeoutError, EasySNMPConnectionError):
-                        version = -1
-                else:
-                    version = -2
-        else:
-            version = -2
-    
-    
+                version = 1
+            except (SystemError, EasySNMPTimeoutError, EasySNMPConnectionError, EasySNMPError):
+                version = -1
+
     return version
 
 def determine_printer_model(hostname, version):
