@@ -39,11 +39,11 @@ class SNMP:
                     ...
                 }
         """
-        # Try to get an integer of how many toners the printer has
-        # If the printer is off it would raise one of the exception below and a dictionary
-        #   is returned that gets used in the template to show the printer is off
+        # Try to get a list of the last value of the oid by walking the supply description oid.
+        # Some printers or copiers, Konica mainly, don't have the oids in in numerical order.
+        # Example: .1.3.6.1.2.1.43.11.1.1.6.1.1, .1.3.6.1.2.1.43.11.1.1.6.1.4, .1.3.6.1.2.1.43.11.1.1.6.1.8
         try:
-            number_of_consumables = len(self.session.walk(".1.3.6.1.2.1.43.11.1.1.6.1"))
+            oids = [oid.oid[-1] for oid in self.session.walk(".1.3.6.1.2.1.43.11.1.1.6.1")]
         except (SystemError, EasySNMPTimeoutError, EasySNMPConnectionError):
 
             # The text in this dictionary is checked in the template, so don't change it
@@ -53,20 +53,20 @@ class SNMP:
 
         consumables_dict = dict()
 
-        for i in range(1, number_of_consumables + 1):
+        for oid in oids:
             try:
                 # Get the colorant name.
                 # Doing this so that the supply name is only `Black` instead of `Canon GPR-55 Black Toner`
-                supply_name = self.session.get(".1.3.6.1.2.1.43.12.1.1.4.1." + str(i)).value
+                supply_name = self.session.get(".1.3.6.1.2.1.43.12.1.1.4.1." + oid).value
             except EasySNMPNoSuchNameError:
                 # In my testing, I have only gotten to this exception on a Canon copier.
                 # It happens because there is no colorant name for waste toners or drum units.
                 continue
 
             # Supply description example: `Canon GPR-55 Black Toner`
-            supply_description = self.session.get(".1.3.6.1.2.1.43.11.1.1.6.1." + str(i)).value
-            supply_max_capacity = self.session.get(".1.3.6.1.2.1.43.11.1.1.8.1." + str(i)).value
-            supply_level = self.session.get(".1.3.6.1.2.1.43.11.1.1.9.1." + str(i)).value
+            supply_description = self.session.get(".1.3.6.1.2.1.43.11.1.1.6.1." + oid).value
+            supply_max_capacity = self.session.get(".1.3.6.1.2.1.43.11.1.1.8.1." + oid).value
+            supply_level = self.session.get(".1.3.6.1.2.1.43.11.1.1.9.1." + oid).value
 
             # Sometimes the supply description is in hexadecimal.
             # This tries to convert hex to ascii if that is the case.
