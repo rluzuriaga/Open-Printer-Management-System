@@ -33,7 +33,7 @@ def homepage(request):
             An instance of :model:`app.Printer` displaying only the distinct departments for the printers. 
         
         ``all_printers``
-            An instrance of :model:`app.Printer` with all the printers ordered by ``department_name`` and ``printer_name``.
+            An instance of :model:`app.Printer` with all the printers ordered by ``department_name`` and ``printer_name``.
         
         ``all_toner_levels``
             An instance of :model:`app.TonerLevel` filtering by ``date_time`` using the time threshold specified in ``settings.py``, 
@@ -63,6 +63,8 @@ def homepage(request):
         if add_printer_form.is_valid():
             try:
                 add_printer_form_function(add_printer_form)
+            except PrinterNameExists:
+                messages.error(request, 'Printer name is already in use. Cannot use the same printer name.')
             except PrinterOffException:
                 messages.error(request,
                     'Printer not added. Make sure you have the correct IP address for the printer and the printer is on.'
@@ -153,7 +155,13 @@ def add_printer_form_function(form):
     ip_address = form.cleaned_data['ip_address']
     department_name = form.cleaned_data['department_name']
 
-    # Get the SNMP version through brout force
+    try:
+        Printer.objects.get(printer_name=printer_name)
+        raise PrinterNameExists
+    except Printer.DoesNotExist:
+        pass
+
+    # Get the SNMP version through brute-force
     # If the function returns -1 that means that either the IP address is wrong or 
     #   the printer is off and the exception is raised.
     # If the function returns -2 the some unexpected error occurred and the exception is raised.
@@ -224,6 +232,9 @@ class PrinterOffException(Exception):
     pass
 
 class PrinterNotAddedException(Exception):
+    pass
+
+class PrinterNameExists(Exception):
     pass
 
 class NoSNMPDataException(Exception):
