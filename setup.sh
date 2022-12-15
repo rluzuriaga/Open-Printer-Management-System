@@ -300,7 +300,7 @@ else
     crontab_text="${crontab_text}*/${timedelta_hours} "
 fi
 
-crontab_text="${crontab_text}* * * ${current_directory}/updatetonerdata.sh"
+crontab_text="${crontab_text}* * * cd ${current_directory} && ./updatetonerdata.sh"
 
 echo "${crontab_text}" > $current_directory/crontab_updatetonerdata
 
