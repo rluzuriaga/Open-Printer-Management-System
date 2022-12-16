@@ -21,7 +21,7 @@ class SiteToggles(forms.Form):
             attrs={
                 'class': 'custom-control-input',
                 'id': 'ip_address',
-                'onChange': 'this.form.submit()'
+                'onChange': 'submit()'
             }
         )
     )
@@ -31,7 +31,7 @@ class SiteToggles(forms.Form):
             attrs={
                 'class': 'custom-control-input',
                 'id': 'location',
-                'onChange': 'this.form.submit()'
+                'onChange': 'submit()'
             }
         )
     )
@@ -41,7 +41,7 @@ class SiteToggles(forms.Form):
             attrs={
                 'class': 'custom-control-input',
                 'id': 'printer_model',
-                'onChange': 'this.form.submit()'
+                'onChange': 'submit()'
             }
         )
     )
