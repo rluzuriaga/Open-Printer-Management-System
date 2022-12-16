@@ -63,8 +63,6 @@ def homepage(request):
         if add_printer_form.is_valid():
             try:
                 add_printer_form_function(add_printer_form)
-            except PrinterNameExists:
-                messages.error(request, 'Printer name is already in use. Cannot use the same printer name.')
             except PrinterOffException:
                 messages.error(request,
                     'Printer not added. Make sure you have the correct IP address for the printer and the printer is on.'
@@ -79,20 +77,11 @@ def homepage(request):
             finally:
                 return redirect('homepage')
         else:
-            # Need to check if the form submitted is add_printer_form.
-            # Without this check, the toggle switches stop working because Django doesn't know
-            #   that the add_printer_form is not the form that is being submitted so the error
-            #   message is sent and the toggle does not update.
-            if "add_printer_submit" in add_printer_form.data:
-
-                # Currently, only one error gets checked from the form (ip_address).
-                # Instead of displaying the error in the form, I am displaying using messages.
-                for error in add_printer_form.errors.values():
-                    error = list(error)[0]
-                    messages.error(request, mark_safe(
-                        "ERROR: " + str(error) + "</br>Printer not added."
-                    ))
-                return redirect('homepage')
+            error_message = ""
+            for error in add_printer_form.errors.values():
+                error_message += f"{error[0]}<br>"
+            messages.error(request, mark_safe(error_message[:-4]))
+            return redirect('homepage')
         
         # Controls the toggle switches to show/hide data from the printer cards.
         toggles_form = SiteToggles(request.POST)
@@ -154,12 +143,6 @@ def add_printer_form_function(form):
     printer_location = form.cleaned_data['printer_location']
     ip_address = form.cleaned_data['ip_address']
     department_name = form.cleaned_data['department_name']
-
-    try:
-        Printer.objects.get(printer_name=printer_name)
-        raise PrinterNameExists
-    except Printer.DoesNotExist:
-        pass
 
     # Get the SNMP version through brute-force
     # If the function returns -1 that means that either the IP address is wrong or 
@@ -232,9 +215,6 @@ class PrinterOffException(Exception):
     pass
 
 class PrinterNotAddedException(Exception):
-    pass
-
-class PrinterNameExists(Exception):
     pass
 
 class NoSNMPDataException(Exception):
