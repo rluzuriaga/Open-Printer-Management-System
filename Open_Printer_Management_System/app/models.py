@@ -10,6 +10,7 @@ class Printer(models.Model):
     printer_name = models.CharField(
         'Printer Name',
         max_length=75,
+        unique=True,
         help_text="Name of printer on server. Example: IT Copier OR 8x11_1125."
     )
     printer_model_name = models.CharField(
